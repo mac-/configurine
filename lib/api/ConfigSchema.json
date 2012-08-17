@@ -1,0 +1,16 @@
+{
+	"name" : "config",
+	"type" : "object",
+	"additionalProperties" : false,
+	"properties" :
+	{
+		"_id"							: { "type" : "object", "required" : false },
+		"name"							: { "type" : "string", "required" : true },
+		"value"							: { "type" : "object", "required" : true  },
+		"created"						: { "type" : "date", "required" : false },
+		"modified"						: { "type" : "date", "required" : false },
+		"tags"							: { "type" : "array", "required" : true },
+		"isSensitive"					: { "type" : "boolean", "required" : true },
+		"isActive"						: { "type" : "boolean", "required" : true }
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"name" : "configTag",
+	"type" : "object",
+	"additionalProperties" : false,
+	"properties" :
+	{
+		"_id"							: { "type" : "object", "required" : false },
+		"name"							: { "type" : "string", "required" : true },
+		"priority"						: { "type" : "string", "required" : true }
+	}
+}
