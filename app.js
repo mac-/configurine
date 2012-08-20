@@ -11,7 +11,7 @@ commander
 	.option('-p, --database-password <password>', 'The password to use when connecting to MongoDB. Defaults to an empty string.')
 	.option('-m, --max-cache-size <size>', 'The number of config entries to cache on the server (in memory). Defaults to 500.')
 	.option('-s, --seconds-to-cache <number>', 'The number of seconds to cache config entries. Defaults to 120.')
-	.option('-t, --log-transport <type>', 'The transport to use for logging. Valid options are console, file, and mongo. If file is chosen, logs will be written to /var/log/configurine.log (make sure you use a program like logrotate to manage your log files). If mongo is chosen, logs will be written to the conman database in the logs collection. Default is console.')
+	.option('-t, --log-transport <type>', 'The transport to use for logging. Valid options are console, file, and mongo. If file is chosen, logs will be written to /var/log/configurine.log (make sure you use a program like logrotate to manage your log files). If mongo is chosen, logs will be written to the configurine database in the logs collection. Default is console.')
 	.option('-g, --log-level <level>', 'The level to log at. Can be a number 0-5 or the following strings: log, trace, debug, info, warn, and error. Default is 0.')
 	.parse(process.argv);
 
