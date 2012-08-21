@@ -174,7 +174,7 @@ The following end points will be available for managing config entries:
 
 	DELETE /configEntries/{id}
 
-These routes require (basic authentication)[http://en.wikipedia.org/wiki/Basic_access_authentication]. So an example curl request might look like:
+These routes require [basic authentication](http://en.wikipedia.org/wiki/Basic_access_authentication). So an example curl request might look like:
 
 	$ curl -u user:user 'http://127.0.0.1:8088/configEntries/502fd3839702c7f81e000001'
 
