@@ -124,7 +124,7 @@ Main API
 
 The main end point that your applications will be using is:
 
-	GET /configurineEntries/{name}?tags={tags}
+	GET /config?name={name}&tags={tags}
 
 where {name} is the name of the config entry and {tags} is the collection of tags to use for determining the highest priority config value in the format of:
 
@@ -132,7 +132,7 @@ where {name} is the name of the config entry and {tags} is the collection of tag
 
 So an example (url-encoded) curl request might look like:
 
-	$ curl 'http://127.0.0.1:8088/configurineEntries/loglevel?tags=environment%3Aproduction%3Bmachine%3Amymachinename%3Bapplication%3AmyApp-v1'
+	$ curl 'http://127.0.0.1:8088/config?name=loglevel&tags=environment%3Aproduction%3Bmachine%3Amymachinename%3Bapplication%3AmyApp-v1'
 
 
 Secondary API
