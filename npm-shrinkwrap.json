@@ -1,15 +1,20 @@
 {
-  "name": "conman",
+  "name": "configurine",
   "version": "0.1.0",
   "dependencies": {
     "commander": {
-      "version": "1.0.0"
-    },
-    "mongodb": {
       "version": "1.0.2",
       "dependencies": {
+        "keypress": {
+          "version": "0.1.0"
+        }
+      }
+    },
+    "mongodb": {
+      "version": "1.1.4",
+      "dependencies": {
         "bson": {
-          "version": "0.0.6"
+          "version": "0.1.1"
         }
       }
     },
@@ -20,10 +25,10 @@
       "version": "0.1.22"
     },
     "restify": {
-      "version": "1.4.3",
+      "version": "1.4.4",
       "dependencies": {
         "bunyan": {
-          "version": "0.8.0"
+          "version": "0.10.0"
         },
         "byline": {
           "version": "2.0.2"
@@ -32,7 +37,7 @@
           "version": "1.0.11"
         },
         "dtrace-provider": {
-          "version": "0.0.6"
+          "version": "0.0.9"
         },
         "http-signature": {
           "version": "0.9.9",
@@ -80,7 +85,7 @@
       }
     },
     "output-cache": {
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "eidetic": {
           "version": "0.1.0"
@@ -123,7 +128,7 @@
           "version": "0.20.3",
           "dependencies": {
             "mkdirp": {
-              "version": "0.3.3"
+              "version": "0.3.4"
             }
           }
         },
