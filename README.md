@@ -92,6 +92,17 @@ This script will create the following config users and tag types:
 	* machine/2
 	* application/4
 
+Running the Tests
+===
+
+Configurine comes with a set of unit tests, and a set of automated integration tests. To run the unit tests run the following command:
+
+	$ make test
+
+To run the integration tests, you'll need a Mongo DB instance set up since the test invokes the application, and change the values in tests/integrationTestConfig.json to match your setup. Then you can run the tests with the following command:
+
+	$ make integration
+
 Running the App
 ===
 

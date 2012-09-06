@@ -18,7 +18,8 @@
 	"devDependencies": {
 		"mocha": "1.x.x",
 		"nock": "0.x.x",
-		"jshint": "0.x.x"
+		"jshint": "0.x.x",
+		"request": "2.x.x"
 	},
 	"keywords": [
 		"config"

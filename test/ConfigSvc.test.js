@@ -3,7 +3,7 @@ var assert = require('assert'),
 	_ = require('underscore'),
 	cfgSvc = new ConfigSvc();
 
-describe('ConfigSvc', function() {
+describe('ConfigSvc Unit Tests', function() {
 	describe('_cloneDocument()', function() {
 		
 		it('should clone a config object', function(done) {

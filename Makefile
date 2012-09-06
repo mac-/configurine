@@ -10,6 +10,9 @@ update:
 test:
 	./test/test.sh
 
+integration:
+	./node_modules/.bin/mocha -R spec -g Integration
+
 coverage:
 	# To install coverage:
 	# $ git clone https://github.com/visionmedia/node-jscoverage.git
@@ -17,7 +20,7 @@ coverage:
 	# $ ./configure && make
 	# $ sudo make install
 	
-	#clean first
+	#clean x
 	rm -rf coverage && mkdir coverage
 	#build the instrumented code with jscoverage
 	jscoverage lib coverage/lib-instrumented
@@ -28,4 +31,4 @@ coverage:
 	#open the coverage result in the browser
 	xdg-open "file://${CURDIR}/coverage/coverage.html" &
 
-.PHONY: test coverage
+.PHONY: test integration coverage

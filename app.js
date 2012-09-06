@@ -22,7 +22,7 @@ commander
 var restify = require('restify'),
 	tracer = require('tracer'),
 	logTransportHelper = require('./lib/helpers/LogTransport'),
-	dbHosts = (commander.databaseHost) ? commander.databaseHost.split(',') : undefined;
+	dbHosts = (commander.databaseHost) ? commander.databaseHost.split(',') : undefined,
 	options = {
 		db: {
 			hosts: dbHosts,
