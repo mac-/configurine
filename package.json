@@ -13,7 +13,7 @@
 		"restify": "1.x.x",
 		"tracer": "0.x.x",
 		"output-cache": "0.x.x",
-		"json-schema": "git+ssh://git@github.com:kriszyp/json-schema.git#v0.2.1"
+		"json-schema": "0.2.0"
 	},
 	"devDependencies": {
 		"mocha": "1.x.x",
