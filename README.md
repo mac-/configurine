@@ -145,6 +145,12 @@ So an example (url-encoded) curl request might look like:
 
 	$ curl 'http://127.0.0.1:8088/config?name=loglevel&tags=environment%3Aproduction%3Bmachine%3Amymachinename%3Bapplication%3AmyApp-v1'
 
+And an example response body would look like this:
+
+	{
+		"name": "loglevel",
+		"value": "error"
+	}
 
 Secondary API
 ---

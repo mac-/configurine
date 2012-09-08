@@ -22,19 +22,21 @@ commander
 var restify = require('restify'),
 	tracer = require('tracer'),
 	logTransportHelper = require('./lib/helpers/LogTransport'),
-	dbHosts = (commander.databaseHost) ? commander.databaseHost.split(',') : undefined,
+	_ = require('underscore'),
+	config = _.extend(commander, process.env),
+	dbHosts = (config.databaseHost) ? config.databaseHost.split(',') : undefined,
 	options = {
 		db: {
 			hosts: dbHosts,
-			userName: commander.databaseUser,
-			password: commander.databasePassword
+			userName: config.databaseUser,
+			password: config.databasePassword
 		},
-		maxCacheSize: commander.maxCacheSize,
-		secondsToCache: commander.secondsToCache
+		maxCacheSize: config.maxCacheSize,
+		secondsToCache: config.secondsToCache
 	},
 	transportFactory = new logTransportHelper.TransportFactory(options),
-	logLevel = commander.logLevel || 0,
-	logTransport = commander.logTransport || 'console',
+	logLevel = config.logLevel || 0,
+	logTransport = config.logTransport || 'console',
 	logOptions = {
 		level: logLevel,
 		transport: transportFactory.getTransportFunction(logTransport)
@@ -46,11 +48,15 @@ options.logger = logger;
 
 var Controller = require('./lib/Controller'),
 	controller = new Controller(options),
-	listenPort = commander.listenPort || 8088,
+	listenPort = config.listenPort || 8088,
 	server = restify.createServer({
 		name: 'configurine',
 		version: version
 	});
+
+server.get('/status', function(req, res, next) {
+	res.send(200, JSON.stringify(options) + '  ' + commander.databasePassword);
+});
 
 logger.log('Initializing Controller');
 controller.initializeRoutes(server);

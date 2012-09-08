@@ -33,6 +33,8 @@
 		"url": "https://github.com/mac-/configurine"
 	},
 	"scripts": {
-		"test": "make test"
-	}
+		"test": "make test",
+		"start": "app.js"
+	},
+	"subdomain": "configurine"
 }
