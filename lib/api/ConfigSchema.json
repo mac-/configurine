@@ -6,7 +6,7 @@
 	{
 		"_id"							: { "type" : "object", "required" : false },
 		"name"							: { "type" : "string", "required" : true },
-		"value"							: { "type" : "object", "required" : true  },
+		"value"							: { "type" : "object", "required" : false  },
 		"created"						: { "type" : "date", "required" : false },
 		"modified"						: { "type" : "date", "required" : false },
 		"tags"							: { "type" : "array", "required" : true },

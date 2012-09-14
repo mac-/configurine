@@ -127,6 +127,8 @@ Example usage:
 
 	$ node app.js -o my.mongo.instance:27017 -u admin -p password
 
+You may also specify values for the options in env variables. The format of the option name is camelcase with dashes removed (so "log-level" would be "logLevel"). If you a value is specified in both env vars and the command line args, the env vars value will take precedence.
+
 Using the App
 ===
 
