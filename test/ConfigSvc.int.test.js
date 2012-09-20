@@ -173,8 +173,7 @@ var assert = require('assert'),
 		}
 		request.get({url: url + tagString, json:true}, function(err, res, body) {
 			assert(!err);
-			assert(_.isEqual(body.value, expectedValue));
-			assert.strictEqual(body.name, configName);
+			assert(_.isEqual(body.config[configName], expectedValue));
 			callback();
 		});
 	};
