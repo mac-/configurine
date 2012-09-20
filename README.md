@@ -139,19 +139,27 @@ The main end point that your applications will be using is:
 
 	GET /config?name={name}&tags={tags}
 
-where {name} is the name of the config entry and {tags} is the collection of tags to use for determining the highest priority config value in the format of:
+where {name} is the name (or names delimited by semi-colons) of the config entry and {tags} is the collection of tags to use for determining the highest priority config value in the format of:
 
 	<tag_type_1>:<tag_value_1>;<tag_type_2>:<tag_value_2>;<tag_type_n>:<tag_value_n>;
 
 So an example (url-encoded) curl request might look like:
 
-	$ curl 'http://127.0.0.1:8088/config?name=loglevel&tags=environment%3Aproduction%3Bmachine%3Amymachinename%3Bapplication%3AmyApp-v1'
+	$ curl 'http://127.0.0.1:8088/config?name=loglevel;key&tags=environment%3Aproduction%3Bmachine%3Amymachinename%3Bapplication%3AmyApp-v1'
 
 And an example response body would look like this:
 
 	{
-		"name": "loglevel",
-		"value": "error"
+		"config": {
+			"loglevel": "error",
+			"key": "1234567890"
+		}
+	}
+
+This route will never return a 404. If there are no config entries that match the given criteria, the response body will look like:
+
+	{
+		"config": {}
 	}
 
 Secondary API
