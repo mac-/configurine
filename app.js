@@ -120,7 +120,7 @@ if (cluster.isMaster) {
 	};
 }
 else {
-	// TODO: add performance logging
+	// TODO: add instrumentation
 
 	var restify = require('restify'),
 		_ = require('underscore'),
