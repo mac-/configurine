@@ -145,14 +145,34 @@ where {name} is the name (or names delimited by semi-colons) of the config entry
 
 So an example (url-encoded) curl request might look like:
 
-	$ curl 'http://127.0.0.1:8088/config?name=loglevel;key&tags=environment%3Aproduction%3Bmachine%3Amymachinename%3Bapplication%3AmyApp-v1'
+	$ curl 'http://127.0.0.1:8088/config?name=loglevel;key&tags=environment%3Aproduction%3Bmachine%3anymachinename%3Bapplication%3AnyApp-v1'
 
 And an example response body would look like this:
 
 	{
 		"config": {
-			"loglevel": "error",
-			"key": "1234567890"
+			"loglevel": {
+				"value": "error",
+				"tags": [
+					{
+						"type": "environment",
+						"value": "production"
+					}
+				]
+			},
+			"key": {
+				"value": "1234567890",
+				"tags": [
+					{
+						"type": "machine",
+						"value": "anymachinename"
+					},
+					{
+						"type": "application",
+						"value": "AnyApp-v1"
+					}
+				]
+			}
 		}
 	}
 
