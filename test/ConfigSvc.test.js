@@ -16,12 +16,15 @@ describe('ConfigSvc Unit Tests', function() {
 				},
 				created: new Date(2010, 4, 9),
 				modified: new Date(2012, 7, 1),
-				tags: [
-					{
-						type: 'APPLICATION',
-						value: 'fnord-v0.1.0'
-					}
-				],
+				associations: {
+					applications: [
+						{
+							name: 'fnord',
+							versions: ['1.0.0']
+						}
+					],
+					environments: ['prod']
+				},
 				isSensitive: false,
 				isActive: true
 			};
@@ -29,7 +32,7 @@ describe('ConfigSvc Unit Tests', function() {
 			var cloned = cfgSvc._cloneDocument(cfg);
 			assert.strictEqual(cloned.name, cfg.name, 'The name property should be cloned');
 			assert(_.isEqual(cloned.value, cfg.value), 'The value property should be cloned');
-			assert(_.isEqual(cloned.tags, cfg.tags), 'The tags property should be cloned');
+			assert(_.isEqual(cloned.associations, cfg.associations), 'The associations property should be cloned');
 			assert.strictEqual(cloned.isSensitive, cfg.isSensitive, 'The isSensitive property should be cloned');
 			assert.strictEqual(cloned.isActive, cfg.isActive, 'The isActive property should be cloned');
 
