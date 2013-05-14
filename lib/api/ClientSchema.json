@@ -1,0 +1,17 @@
+{
+	"name" : "client",
+	"type" : "object",
+	"additionalProperties" : false,
+	"properties" :
+	{
+		"_id"							: { "type" : "object", "required" : false },
+		"name"							: { "type" : "string" , "required" : true },
+		"type"							: { "type" : "string", "enum": ["system", "user"], "required" : true },
+		"sharedKey"						: { "type" : "string", "required" : false },
+		"privateKey"					: { "type" : "string", "required" : true },
+		"password"						: { "type" : "string", "required" : false },
+		"applications"					: { "type" : "array", "required" : true, "items": { "type" : "string", "required" : false } },
+		"created"						: { "type" : "date", "required" : false },
+		"modified"						: { "type" : "date", "required" : false }
+	}
+}
