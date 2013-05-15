@@ -27,18 +27,6 @@ module.exports = {
 		argument: 'password',
 		description: 'The password to use when connecting to MongoDB.'
 	},
-	maxCacheSize: {
-		character: 'm',
-		argument: 'size',
-		defaultValue: 500,
-		description: 'The number of config entries to cache on the server (in memory).'
-	},
-	secondsToCache: {
-		character: 's',
-		argument: 'number',
-		defaultValue: 120,
-		description: 'The number of seconds to cache config entries.'
-	},
 	logTransport: {
 		character: 't',
 		argument: 'type',
@@ -50,5 +38,11 @@ module.exports = {
 		argument: 'level',
 		defaultValue: 0,
 		description: 'The level to log at. Can be a number 0-5 or the following strings: log, trace, debug, info, warn, and error.'
+	},
+	statsdHost: {
+		character: 's',
+		argument: 'host',
+		defaultValue: '127.0.0.1:8125',
+		description: 'The statsd host (hostname and port) where metrics can be sent.'
 	}
 };

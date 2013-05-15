@@ -1,11 +1,23 @@
 var version = require('./package.json').version,
 	cluster = require('cluster'),
 	opter = require('opter'),
-	options = require('./options.js'),
+	options = require('./options'),
+	AuthHelper = require('./lib/helpers/Authentication'),
+	StatsdClient = require('statsd-client'),
+	statsdClient,
 	logger,
 	workers = [],
 	timeouts = {},
 	errorHandler = null,
+	getStatsdInstance = function(hostname, port) {
+		var statsdClient = new StatsdClient({
+			host: hostname,
+			port: port,
+			prefix: require('./package.json').name
+		});
+
+		return statsdClient;
+	},
 	getLoggerInstance = function(transport, logLevel, dbOptions) {
 		var logTransportHelper = require('./lib/helpers/LogTransport'),
 			transportFactory = new logTransportHelper.TransportFactory(dbOptions),
@@ -83,6 +95,7 @@ else {*/
 	// TODO: add instrumentation
 
 	var Hapi = require('hapi'),
+		pack = new Hapi.Pack(),
 		_ = require('underscore'),
 		dbHosts = (process.env.databaseHost) ? process.env.databaseHost.split(',') : undefined,
 		options = {
@@ -96,19 +109,56 @@ else {*/
 		};
 
 	options.logger = logger = getLoggerInstance(process.env.logTransport, process.env.logLevel, options);
+	options.statsdClient = statsdClient = (process.env.hasOwnProperty('host')) ?
+							getStatsdInstance(process.env.host.split(':')[0], process.env.host.split(':')[1]) :
+							{increment:function(){},decrement:function(){},counter:function(){},guage:function(){},timing:function(){},getChildClient:function(){return this;}};
 
 	var ConfigController = require('./lib/ConfigController'),
-		controller = new ConfigController(options),
+		configController = new ConfigController(options),
+		AuthenticationController = require('./lib/AuthenticationController'),
+		authController = new AuthenticationController(options),
 		listenPort = process.env.listenPort || 8088,
-		server = Hapi.createServer(listenPort);
+		server = Hapi.createServer(listenPort),
+		authHelper = new AuthHelper(options),
+		startTimesFromRequestId = {},
+		normalizePath = function(path) {
+			path = (path.indexOf('/') === 0) ? path.substr(1) : path;
+			return path.replace('/', '-');
+		};
 
-	server.route(controller.routes);
+	
+	
+	// this doesn't work yet
+	//pack.require(['furball', 'lout']);
+
+	// register auth mechanism (before registering routes)
+	server.auth('oauth2', { implementation: authHelper });
+
+
+	server.route(configController.routes);
+	server.route(authController.routes);
+
+
+	server.ext('onRequest', function (request, next) {
+		startTimesFromRequestId[request.id] = new Date();
+		next();
+	});
+
+	server.ext('onPreResponse', function (request, next) {
+		var statusCode = request.response()._code || request.response().response.code || 'unknown';
+		statsdClient.increment(request.method + '_' + normalizePath(request.path) + '.statusCode.' + statusCode);
+		statsdClient.increment(request.method + '_' + normalizePath(request.path));
+		statsdClient.timing(request.method + '_' + normalizePath(request.path), startTimesFromRequestId[request.id]);
+		next();
+	});
 
 	errorHandler = function(evt, err) {
 		if (err) {
+			statsdClient.increment('uncaught-exception');
 			logger.error('Event:', evt, 'Error:', err.stack);
 		}
 		else {
+			statsdClient.increment('system-event');
 			logger.error('Event:', evt);
 		}
 		server.stop(function() {

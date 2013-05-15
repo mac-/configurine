@@ -146,6 +146,35 @@
         }
       }
     },
+    "lout": {
+      "version": "0.4.0",
+      "from": "lout@0.x.x",
+      "resolved": "https://registry.npmjs.org/lout/-/lout-0.4.0.tgz",
+      "dependencies": {
+        "hoek": {
+          "version": "0.8.5",
+          "from": "hoek@0.8.x",
+          "resolved": "https://registry.npmjs.org/hoek/-/hoek-0.8.5.tgz"
+        },
+        "boom": {
+          "version": "0.4.1",
+          "from": "boom@0.4.x",
+          "resolved": "https://registry.npmjs.org/boom/-/boom-0.4.1.tgz"
+        }
+      }
+    },
+    "furball": {
+      "version": "0.3.0",
+      "from": "furball@0.x.x",
+      "resolved": "https://registry.npmjs.org/furball/-/furball-0.3.0.tgz",
+      "dependencies": {
+        "hoek": {
+          "version": "0.8.5",
+          "from": "hoek@0.8.x",
+          "resolved": "https://registry.npmjs.org/hoek/-/hoek-0.8.5.tgz"
+        }
+      }
+    },
     "tracer": {
       "version": "0.5.1",
       "from": "tracer@0.x.x",
@@ -196,6 +225,11 @@
           "resolved": "https://registry.npmjs.org/clone/-/clone-0.1.7.tgz"
         }
       }
+    },
+    "statsd-client": {
+      "version": "0.0.12",
+      "from": "statsd-client@0.x.x",
+      "resolved": "https://registry.npmjs.org/statsd-client/-/statsd-client-0.0.12.tgz"
     },
     "nock": {
       "version": "0.18.0",
@@ -354,7 +388,7 @@
         },
         "mime": {
           "version": "1.2.9",
-          "from": "mime@~1.2.9",
+          "from": "mime@1.2.x",
           "resolved": "https://registry.npmjs.org/mime/-/mime-1.2.9.tgz"
         },
         "form-data": {
