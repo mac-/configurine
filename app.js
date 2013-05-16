@@ -32,8 +32,8 @@ var version = require('./package.json').version,
 			logger = require('tracer').console(logOptions);
 		return logger;
 	};
-/*
-if (cluster.isMaster) {
+
+/*if (cluster.isMaster) {
 
 	var config = opter(options, version);
 
@@ -55,6 +55,7 @@ if (cluster.isMaster) {
 	}
 
 	cluster.on('fork', function(worker) {
+		logger.log('worker forked');
 		timeouts[worker.id] = setTimeout(function() {
 			logger.log('worker timed out');
 			worker.destroy();
@@ -77,6 +78,7 @@ if (cluster.isMaster) {
 	cluster.on('exit', function(worker, code, signal) {
 		clearTimeout(timeouts[worker.id]);
 		var exitCode = worker.process.exitCode;
+		console.log(worker);
 		logger.log('worker ' + worker.process.pid + ' died ('+exitCode+'). restarting...');
 		workers.splice(workers.indexOf(worker), 1);
 		workers.push(cluster.fork(config));
@@ -92,8 +94,6 @@ if (cluster.isMaster) {
 	};
 }
 else {*/
-	// TODO: add instrumentation
-
 	var Hapi = require('hapi'),
 		pack = new Hapi.Pack(),
 		_ = require('underscore'),
@@ -121,6 +121,7 @@ else {*/
 		server = Hapi.createServer(listenPort),
 		authHelper = new AuthHelper(options),
 		startTimesFromRequestId = {},
+		isStarted = false,
 		normalizePath = function(path) {
 			path = (path.indexOf('/') === 0) ? path.substr(1) : path;
 			return path.replace('/', '-');
@@ -161,14 +162,19 @@ else {*/
 			statsdClient.increment('system-event');
 			logger.error('Event:', evt);
 		}
-		server.stop(function() {
+		if (isStarted) {
+			server.stop(function() {
+				process.exit(1);
+			});
+		}
+		else {
 			process.exit(1);
-		});
-		
+		}
 	};
 
 	
 	server.start(function() {
+		isStarted = true;
 		logger.log('Server started at:', server.info.uri);
 	});
 //}
