@@ -1,21 +1,18 @@
 configurine [![Build Status](https://secure.travis-ci.org/mac-/configurine.png)](http://travis-ci.org/mac-/configurine)
 ===
 
-Configurine is a Node JS application that provides a REST interface for managing and retrieving config values. Configurine currently uses MongoDB for storing config values, and provides a RESTful API for retrieving values from the DB. The system allows you to "tag" your config with specific properties so that you can have multiple config values with the same name, but they'll get used differently depending on the situation (applications/environments/machines).
+Configurine is a Node JS application that provides a REST interface for managing and retrieving config values. Configurine currently uses MongoDB for storing config values, and provides a RESTful API for retrieving values from the DB. The system allows you to "associate" your config values to either environments or applications, or both.
 
-For example, you could have two config values named "myConfig", and tag each one with a different environment (development/production) or with a different machine name (prod01/prod02).
+For example, you could have two config values named "myConfig", and each one is associated to a different environment (development/production) or to a different application (myapp-v1/myapp-v2).
 
-This centralized system provides an easy mechanism for using application-specific, environment-specific, and machine-specific config for all of your applications, regardless of what technology they are using.
+This centralized system provides an easy mechanism for using application-specific or environment-specific config for all of your applications, regardless of what technology they are using.
 
 Goals
 ===
 * should be available to both client and server apps
-* should be centralized
+* should be able to act as a centralized system
 * should be easy to add/change values (REST interface)
-* should allow multiple values with the same name but different tags to support app/env/machine-specific overrides
-* should be fast and cache values when possible
-* should be able to work with multiple programming languages
-* should track changes to config values (history)
+* should allow multiple values with the same name
 * management of config can be automated with scripts or through a nice GUI
 
 The Design
@@ -56,11 +53,6 @@ The Database
 
 There are four Mongo collections used in Confgurine that are required. The first collection is called "config" and stores the actual config values. The second is called "configUsers" and stores the credentials of users who can manage the system. The last collection is called "configTagTypes" and contains all the available tag types and thier priorities. The fourth collection is called "history" and stores a history of each change to a given config document. There is one last optional collection called "logs" if you choose to write your logs to Mongo.
 
-Config Entry History
----
-
-Every change to a config entry will result in a new document in the "history" collection. You'll then be able to revert config documents to a previous state based on the documents in this collection.
-
 
 Installation
 ===
@@ -77,20 +69,7 @@ Pull down the source code and run the tests to make sure everything you are in a
 	$ make install
 	$ make test
 
-If you'd like to get the default setup up and running (recommended), you'll want to run the following:
 
-	$ ./scripts/CreateDefaultSetup -o <your.mongo.host:port> -u <your.mongo.user.name> -p <your.mongo.user.password>
-
-This script will create the following config users and tag types:
-
-* Users (username/password):
-	* admin/admin
-	* editor/editor
-	* user/user
-* Tag Types (name/priority):
-	* environment/1
-	* machine/2
-	* application/4
 
 Running the Tests
 ===
@@ -109,19 +88,22 @@ Running the App
 You can run configurine with the -h flag to see the various options:
 
 	$ node app.js -h
+	  Usage: app.js [options]
+
 	  Options:
 
 	    -h, --help                          output usage information
 	    -V, --version                       output the version number
-	    -l, --listen-port <port>            The port that the application will listen for incoming HTTP requests on. Defaults to 8088.
-	    -n, --number-processes <number>     The number of processes to use for this application. Default is 1.
-	    -o, --database-host <host>          The MongoDB host that this should connect to (hostname and port). This can also be a comma-separated list of hosts to support a replica set. Defaults to 127.0.0.1:27017.
-	    -u, --database-user <user>          The user name to use when connecting to MongoDB. Defaults to an empty string.
-	    -p, --database-password <password>  The password to use when connecting to MongoDB. Defaults to an empty string.
-	    -m, --max-cache-size <size>         The number of config entries to cache on the server (in memory). Defaults to 500.
-	    -s, --seconds-to-cache <number>     The number of seconds to cache config entries. Defaults to 120.
-	    -t, --log-transport <type>          The transport to use for logging. Valid options are console, file, and mongo. If file is chosen, logs will be written to /var/log/configurine.log (make sure you use a program like logrotate to manage your log files). If mongo is chosen, logs will be written to the configurine database in the logs collection. Default is console.
-	    -g, --log-level <level>             The level to log at. Can be a number 0-5 or the following strings: log, trace, debug, info, warn, and error. Default is 0.
+	    -l, --listen-port <port>            The port that the application will listen for incoming HTTP requests on. Defaults to: 8088
+	    -n, --number-processes <number>     The number of processes to use for this application. Defaults to: 1
+	    -o, --database-host <host>          The MongoDB host that this should connect to (hostname and port). This can also be a comma-separated list of hosts to support a replica set. Defaults to: "127.0.0.1:27017"
+	    -u, --database-user <user>          The user name to use when connecting to MongoDB.
+	    -p, --database-password <password>  The password to use when connecting to MongoDB.
+	    -t, --log-transport <type>          The transport to use for logging. Valid options are none, console, file, and mongo. If file is chosen, logs will be written to /var/log/configurine.log (make sure you use a program like logrotate to manage your log files). If mongo is chosen, logs will be written to the configurine database in the logs collection. Defaults to: "none"
+	    -g, --log-level <level>             The level to log at. Can be a number 0-5 or the following strings: log, trace, debug, info, warn, and error. Defaults to: 0
+	    -s, --statsd-host <host>            The statsd host (hostname and port) where metrics can be sent. Defaults to: "127.0.0.1:8125"
+
+
 
 Example usage:
 
@@ -137,106 +119,59 @@ Main API
 
 The main end point that your applications will be using is:
 
-	GET /config?name={name}&tags={tags}
+	GET /config
 
-where {name} is the name (or names delimited by semi-colons) of the config entry and {tags} is the collection of tags to use for determining the highest priority config value in the format of:
+This rend point, by itself, will return all config entries in the system. To filter the result to something more managable, ther are a few query string parameters that you can specify:
 
-	<tag_type_1>:<tag_value_1>;<tag_type_2>:<tag_value_2>;<tag_type_n>:<tag_value_n>;
+	* ```names```
+		* The ```names``` query string parameter will filter the result to only include config entries with the names you specify
+		* Example: ```GET /config?names=statsd&names=loglevel``` will return results that have the name "statsd" OR "loglevel"
+	* ```associations```
+		* The ```associations``` query string parameter will filter the result to only include config entries with the associations you specify
+		* Application associations are specified in the format of ```application|<appName>|<appVersion>```
+		* Environment associations are specified in the format of ```environment|<envName>```
+		* Example: ```GET /config?associations=environment|production&associations=application|myapp|1.0.0``` will return results that have an association to the application named "myapp" whose version is "1.0.0" OR an environment named "production"
+	* ```isActive```
+		* the ```isActive``` query string parameter will filter the result to only include config entries that have the ```isActive``` flag set to the specifed boolean value
+		* Example: ```GET /config?isActive=true``` will return results that have the ```isActive``` property set to true
 
-So an example (url-encoded) curl request might look like:
+It is also possible to mix and match these parameters as you see fit to get the result you want. It is possible that the results of these requests to contain config entries with the same name. Therefore it is up to the consumer to provide the logic for parsing out the values that their application should consume. For example, A request to ```GET /config?names=loglevel``` could return the following result:
 
-	$ curl 'http://127.0.0.1:8088/config?name=loglevel;key&tags=environment%3Aproduction%3Bmachine%3anymachinename%3Bapplication%3AnyApp-v1'
+	[{
+		"name": "loglevel",
+		"value": "error",
+		"associations": {
+			"applications": [{
+				"name": "myapp",
+				"version": "1.0.0"
+			}],
+			environments: []
+		},
+		isSensitive: false,
+		isActive: true
+	}, {
+		"name": "loglevel",
+		"value": "info",
+		"associations": {
+			"applications": [{
+				"name": "myapp",
+				"version": "2.0.0"
+			}],
+			environments: []
+		},
+		isSensitive: false,
+		isActive: true
+	}]
 
-And an example response body would look like this:
+As you can see, there are multiple values for the config entry named "loglevel". Therefore it is up to the application to decide which one to use. In this case, if my application is named "myapp", then I may want to just change the GET request to incorporate the query string parameter for associations to narrow down the results so that my application doesn't have to do as much work to determine which value to use. For example, I could change the request to ```GET /config?names=loglevel&associations=application|myapp|2.0.0``` to narrow the result down to one entry.
 
-	{
-		"config": {
-			"loglevel": {
-				"value": "error",
-				"tags": [
-					{
-						"type": "environment",
-						"value": "production"
-					}
-				]
-			},
-			"key": {
-				"value": "1234567890",
-				"tags": [
-					{
-						"type": "machine",
-						"value": "anymachinename"
-					},
-					{
-						"type": "application",
-						"value": "AnyApp-v1"
-					}
-				]
-			}
-		}
-	}
 
-This route will never return a 404. If there are no config entries that match the given criteria, the response body will look like:
-
-	{
-		"config": {}
-	}
-
-Secondary API
----
-
-The following end points will be available for managing config entries:
-
-	GET /configEntries/{id}
-
-	POST /configEntries
-
-		{
-			name: {name},
-			value: {value},
-			tags: [
-				{
-					type: {tageType},
-					value: {tagValue}
-				}
-			],
-			isSensitive: {trueOrFalse},
-			isActive: {trueOrFalse}
-		}
-
-	PUT /configEntries/{id}
-
-		{
-			name: {name},
-			value: {value},
-			tags: [
-				{
-					type: {tageType},
-					value: {tagValue}
-				}
-			],
-			isSensitive: {trueOrFalse},
-			isActive: {trueOrFalse}
-		}
-
-	DELETE /configEntries/{id}
+Authentication
+===
 
 These routes require [basic authentication](http://en.wikipedia.org/wiki/Basic_access_authentication). So an example curl request might look like:
 
 	$ curl -u user:user 'http://127.0.0.1:8088/configEntries/502fd3839702c7f81e000001'
-
-
-The following end points will be available for managing config users:
-
-	COMING SOON...
-
-The following end points will be available for managing config tag types:
-
-	COMING SOON...
-
-The following end points will be available for managing config history:
-
-	COMING SOON...
 
 
 License
