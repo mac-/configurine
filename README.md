@@ -25,28 +25,9 @@ Config documents will mainly be accessed by name. A config document consists of 
 
 * name: The name of the config entry that comsumers will request values by
 * value: The value of the config entry that contains the data necessary for consumers
-* tags: A collection of tags that describe the config entry
+* associations: A collection of associations that describe the relationships to environments and applications
 * isActive: A flag that marks whether or not this config entry is available to consumers
 * isSensitive: A flag that marks whether or not this config entry requires authentication in order to be available to conumers
-
-Tagging
----
-
-The tagging system is probably the most important part of the application. Configurine comes with a script that will create a set of default tag types. But you could set up your own tag types as you see fit. The default tag types are: "environment", "machine", and "application". The tagging system has a priority system and each tag type has it's own "weight". This allows us to have multiple config entries with the same name, but can be used in different circumstances.When requesting a config entry by name, you'll also supply a list of tags that correspond to the given situation. For example, let's say you have an entry called "loglevel" and in your development environment you want it set to "debug", but in production you want it set to "error". You would create two different entries in the system, but tag one with the "environment" tag of "development" and the other with "production". You're application would then just have to make a request to get config and pass along the name of the environment, and Configurine will provide the corresponding config value. 
-
-The algorithm that Configurine uses to determine the best config value works as follows:
-
-* Find all config documents in the DB with the desired name
-* Assign a total score to each document by adding up the priorities of each matching tag
-* A config document is removed from the collection of possibilities if it contains a value of a given tag type that is different than the one being requested
-	* For example, if we want a config entry tagged with of environment: production, but there is one with the same name that has a tag of environment: development, it is removed from the possibilities. But if there is one with the same name and it does NOT contain any environment type tag, then it is still in the running.
-* Respond back with the value of the config document with the highest score.
-
-Tagging Notes
----
-
-* the tag types must have a priority that is a power of 2 AND is unique to prevent more than one config entry matching a given set of conditions.
-* your application should ALWAYS provides values for each tag type that you have in Configurine, otherwise it may not be able to always determine the desired value.
 
 The Database
 ---
