@@ -104,17 +104,17 @@ The main end point that your applications will be using is:
 
 This rend point, by itself, will return all config entries in the system. To filter the result to something more managable, ther are a few query string parameters that you can specify:
 
-	* ```names```
-		* The ```names``` query string parameter will filter the result to only include config entries with the names you specify
-		* Example: ```GET /config?names=statsd&names=loglevel``` will return results that have the name "statsd" OR "loglevel"
-	* ```associations```
-		* The ```associations``` query string parameter will filter the result to only include config entries with the associations you specify
-		* Application associations are specified in the format of ```application|<appName>|<appVersion>```
-		* Environment associations are specified in the format of ```environment|<envName>```
-		* Example: ```GET /config?associations=environment|production&associations=application|myapp|1.0.0``` will return results that have an association to the application named "myapp" whose version is "1.0.0" OR an environment named "production"
-	* ```isActive```
-		* the ```isActive``` query string parameter will filter the result to only include config entries that have the ```isActive``` flag set to the specifed boolean value
-		* Example: ```GET /config?isActive=true``` will return results that have the ```isActive``` property set to true
+* ```names```
+	* The ```names``` query string parameter will filter the result to only include config entries with the names you specify
+	* Example: ```GET /config?names=statsd&names=loglevel``` will return results that have the name "statsd" OR "loglevel"
+* ```associations```
+	* The ```associations``` query string parameter will filter the result to only include config entries with the associations you specify
+	* Application associations are specified in the format of ```application|<appName>|<appVersion>```
+	* Environment associations are specified in the format of ```environment|<envName>```
+	* Example: ```GET /config?associations=environment|production&associations=application|myapp|1.0.0``` will return results that have an association to the application named "myapp" whose version is "1.0.0" OR an environment named "production"
+* ```isActive```
+	* the ```isActive``` query string parameter will filter the result to only include config entries that have the ```isActive``` flag set to the specifed boolean value
+	* Example: ```GET /config?isActive=true``` will return results that have the ```isActive``` property set to true
 
 It is also possible to mix and match these parameters as you see fit to get the result you want. It is possible that the results of these requests to contain config entries with the same name. Therefore it is up to the consumer to provide the logic for parsing out the values that their application should consume. For example, A request to ```GET /config?names=loglevel``` could return the following result:
 
@@ -126,10 +126,10 @@ It is also possible to mix and match these parameters as you see fit to get the 
 				"name": "myapp",
 				"version": "1.0.0"
 			}],
-			environments: []
+			"environments": []
 		},
-		isSensitive: false,
-		isActive: true
+		"isSensitive": false,
+		"isActive": true
 	}, {
 		"name": "loglevel",
 		"value": "info",
@@ -138,10 +138,10 @@ It is also possible to mix and match these parameters as you see fit to get the 
 				"name": "myapp",
 				"version": "2.0.0"
 			}],
-			environments: []
+			"environments": []
 		},
-		isSensitive: false,
-		isActive: true
+		"isSensitive": false,
+		"isActive": true
 	}]
 
 As you can see, there are multiple values for the config entry named "loglevel". Therefore it is up to the application to decide which one to use. In this case, if my application is named "myapp", then I may want to just change the GET request to incorporate the query string parameter for associations to narrow down the results so that my application doesn't have to do as much work to determine which value to use. For example, I could change the request to ```GET /config?names=loglevel&associations=application|myapp|2.0.0``` to narrow the result down to one entry.
