@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "dependencies": {
     "opter": {
-      "version": "0.1.1",
+      "version": "0.2.0",
       "from": "opter@0.x.x",
-      "resolved": "https://registry.npmjs.org/opter/-/opter-0.1.1.tgz",
+      "resolved": "https://registry.npmjs.org/opter/-/opter-0.2.0.tgz",
       "dependencies": {
         "commander": {
           "version": "1.1.1",
@@ -74,9 +74,9 @@
           "resolved": "https://registry.npmjs.org/hawk/-/hawk-0.13.1.tgz",
           "dependencies": {
             "sntp": {
-              "version": "0.2.2",
+              "version": "0.2.3",
               "from": "sntp@0.2.x",
-              "resolved": "https://registry.npmjs.org/sntp/-/sntp-0.2.2.tgz"
+              "resolved": "https://registry.npmjs.org/sntp/-/sntp-0.2.3.tgz"
             }
           }
         },
@@ -107,7 +107,7 @@
         },
         "lru-cache": {
           "version": "2.3.0",
-          "from": "lru-cache@2.3.x",
+          "from": "lru-cache@2",
           "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-2.3.0.tgz"
         },
         "optimist": {
@@ -231,6 +231,11 @@
       "from": "statsd-client@0.x.x",
       "resolved": "https://registry.npmjs.org/statsd-client/-/statsd-client-0.0.12.tgz"
     },
+    "travis-cov": {
+      "version": "0.2.4",
+      "from": "travis-cov@0.2.x",
+      "resolved": "https://registry.npmjs.org/travis-cov/-/travis-cov-0.2.4.tgz"
+    },
     "nock": {
       "version": "0.18.0",
       "from": "nock@0.x.x",
@@ -292,6 +297,62 @@
         }
       }
     },
+    "blanket": {
+      "version": "1.0.9",
+      "from": "blanket@1.0.x",
+      "resolved": "https://registry.npmjs.org/blanket/-/blanket-1.0.9.tgz",
+      "dependencies": {
+        "esprima": {
+          "version": "1.0.3",
+          "from": "esprima@~1.0.2",
+          "resolved": "https://registry.npmjs.org/esprima/-/esprima-1.0.3.tgz"
+        },
+        "falafel": {
+          "version": "0.1.6",
+          "from": "falafel@~0.1.6",
+          "resolved": "https://registry.npmjs.org/falafel/-/falafel-0.1.6.tgz"
+        },
+        "requirejs": {
+          "version": "2.1.6",
+          "from": "requirejs@~2.1.4",
+          "resolved": "https://registry.npmjs.org/requirejs/-/requirejs-2.1.6.tgz"
+        },
+        "xtend": {
+          "version": "2.0.4",
+          "from": "xtend@~2.0.3",
+          "resolved": "https://registry.npmjs.org/xtend/-/xtend-2.0.4.tgz",
+          "dependencies": {
+            "is-object": {
+              "version": "0.1.2",
+              "from": "is-object@~0.1.2",
+              "resolved": "https://registry.npmjs.org/is-object/-/is-object-0.1.2.tgz"
+            },
+            "object-keys": {
+              "version": "0.2.0",
+              "from": "object-keys@~0.2.0",
+              "resolved": "https://registry.npmjs.org/object-keys/-/object-keys-0.2.0.tgz",
+              "dependencies": {
+                "foreach": {
+                  "version": "2.0.3",
+                  "from": "foreach@~2.0.1",
+                  "resolved": "https://registry.npmjs.org/foreach/-/foreach-2.0.3.tgz"
+                },
+                "indexof": {
+                  "version": "0.0.1",
+                  "from": "indexof@~0.0.1",
+                  "resolved": "https://registry.npmjs.org/indexof/-/indexof-0.0.1.tgz"
+                },
+                "is": {
+                  "version": "0.2.6",
+                  "from": "is@~0.2.6",
+                  "resolved": "https://registry.npmjs.org/is/-/is-0.2.6.tgz"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "request": {
       "version": "2.21.0",
       "from": "request@2.x.x",
@@ -341,7 +402,7 @@
         },
         "hawk": {
           "version": "0.13.1",
-          "from": "hawk@~0.13.0",
+          "from": "hawk@0.13.x",
           "resolved": "https://registry.npmjs.org/hawk/-/hawk-0.13.1.tgz",
           "dependencies": {
             "hoek": {
@@ -360,9 +421,9 @@
               "resolved": "https://registry.npmjs.org/cryptiles/-/cryptiles-0.2.1.tgz"
             },
             "sntp": {
-              "version": "0.2.2",
+              "version": "0.2.3",
               "from": "sntp@0.2.x",
-              "resolved": "https://registry.npmjs.org/sntp/-/sntp-0.2.2.tgz"
+              "resolved": "https://registry.npmjs.org/sntp/-/sntp-0.2.3.tgz"
             }
           }
         },

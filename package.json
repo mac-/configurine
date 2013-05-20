@@ -24,7 +24,9 @@
 		"mocha": "1.x.x",
 		"nock": "0.x.x",
 		"jshint": "0.9.0",
-		"request": "2.x.x"
+		"request": "2.x.x",
+		"blanket": "1.0.x",
+		"travis-cov": "0.2.x"
 	},
 	"keywords": [
 		"config"
@@ -38,7 +40,15 @@
 		"url": "https://github.com/mac-/configurine"
 	},
 	"scripts": {
-		"test": "make test",
+		"test": "make test && make test-cov",
+		"blanket": {
+			"pattern": "//^((?!\/node_modules\/)(?!\/test\/).)*$/gi",
+			"onlyCwd": true,
+			"data-cover-flags": {
+				"branchTracking": true
+			}
+		},
+		"travis-cov": { "threshold": 90 },
 		"start": "app.js"
 	},
 	"subdomain": "configurine"
