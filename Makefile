@@ -8,27 +8,14 @@ update:
 	make clean && rm -rf npm-shrinkwrap.json && npm install && npm shrinkwrap
 
 test:
-	./test/test.sh
+	./node_modules/.bin/jshint lib/* --config test/jshint/config.json
+	@NODE_ENV=test ./node_modules/.bin/mocha --recursive --reporter spec --timeout 3000 test
 
-integration:
-	./node_modules/.bin/mocha -R spec -g Integration
+test-cov:
+	@NODE_ENV=test ./node_modules/.bin/mocha --require blanket --recursive --timeout 3000 -R travis-cov test
 
-coverage:
-	# To install coverage:
-	# $ git clone https://github.com/visionmedia/node-jscoverage.git
-	# $ cd node-jscoverage
-	# $ ./configure && make
-	# $ sudo make install
-	
-	#clean x
-	rm -rf coverage && mkdir coverage
-	#build the instrumented code with jscoverage
-	jscoverage lib coverage/lib-instrumented
-	#create the symlink that the unit tests are expecting
-	ln -fns ./coverage/lib-instrumented/ ./lib-test
-	#run the tests against the instrumented code
-	./node_modules/.bin/mocha -R html-cov > ./coverage/coverage.html
-	#open the coverage result in the browser
-	xdg-open "file://${CURDIR}/coverage/coverage.html" &
+test-cov-html:
+	@NODE_ENV=test ./node_modules/.bin/mocha --require blanket --recursive --timeout 3000 -R html-cov test > test/coverage.html
+	xdg-open "file://${CURDIR}/test/coverage.html" &
 
-.PHONY: test integration coverage
+.PHONY: test test-cov test-cov-html
