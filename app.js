@@ -34,9 +34,9 @@ var version = require('./package.json').version,
 	};
 
 /*if (cluster.isMaster) {
-
+*/
 	var config = opter(options, version);
-
+/*
 	var dbHosts = (config.databaseHost) ? config.databaseHost.split(',') : undefined,
 		dbOptions = {
 			db: {
@@ -97,27 +97,28 @@ else {*/
 	var Hapi = require('hapi'),
 		pack = new Hapi.Pack(),
 		_ = require('underscore'),
-		dbHosts = (process.env.databaseHost) ? process.env.databaseHost.split(',') : undefined,
+		//config = process.env,
+		dbHosts = (config.databaseHost) ? config.databaseHost.split(',') : undefined,
 		options = {
 			db: {
 				hosts: dbHosts,
-				userName: process.env.databaseUser,
-				password: process.env.databasePassword
+				userName: config.databaseUser,
+				password: config.databasePassword
 			},
-			maxCacheSize: process.env.maxCacheSize,
-			secondsToCache: process.env.secondsToCache
+			maxCacheSize: config.maxCacheSize,
+			secondsToCache: config.secondsToCache
 		};
 
-	options.logger = logger = getLoggerInstance(process.env.logTransport, process.env.logLevel, options);
-	options.statsdClient = statsdClient = (process.env.hasOwnProperty('host')) ?
-							getStatsdInstance(process.env.host.split(':')[0], process.env.host.split(':')[1]) :
+	options.logger = logger = getLoggerInstance(config.logTransport, config.logLevel, options);
+	options.statsdClient = statsdClient = (config.hasOwnProperty('host')) ?
+							getStatsdInstance(config.host.split(':')[0], config.host.split(':')[1]) :
 							{increment:function(){},decrement:function(){},counter:function(){},guage:function(){},timing:function(){},getChildClient:function(){return this;}};
 
 	var ConfigController = require('./lib/ConfigController'),
 		configController = new ConfigController(options),
 		AuthenticationController = require('./lib/AuthenticationController'),
 		authController = new AuthenticationController(options),
-		listenPort = process.env.listenPort || 8088,
+		listenPort = config.listenPort || 8088,
 		server = Hapi.createServer(listenPort),
 		authHelper = new AuthHelper(options),
 		startTimesFromRequestId = {},
@@ -172,7 +173,6 @@ else {*/
 		}
 	};
 
-	
 	server.start(function() {
 		isStarted = true;
 		logger.log('Server started at:', server.info.uri);

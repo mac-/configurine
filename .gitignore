@@ -6,3 +6,4 @@ coverage
 .DS*
 *.txt
 opter.json
+test/coverage*
