@@ -1,5 +1,5 @@
 var assert = require('assert'),
-	ConfigSvc = require('../../lib-test/api/ConfigSvc.js'),
+	ConfigSvc = require('../../lib/api/ConfigSvc.js'),
 	_ = require('underscore'),
 	cfgSvc = new ConfigSvc();
 
