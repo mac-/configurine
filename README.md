@@ -1,5 +1,8 @@
-configurine [![Build Status](https://secure.travis-ci.org/mac-/configurine.png)](http://travis-ci.org/mac-/configurine)
+configurine
 ===
+
+[![Build Status](https://secure.travis-ci.org/mac-/configurine.png)](http://travis-ci.org/mac-/configurine)
+[![Dependency Status](https://david-dm.org/mac-/configurine.png)](https://david-dm.org/mac-/configurine)
 
 Configurine is a Node JS application that provides a REST interface for managing and retrieving config values. Configurine currently uses MongoDB for storing config values, and provides a RESTful API for retrieving values from the DB. The system allows you to "associate" your config values to either environments or applications, or both.
 
