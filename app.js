@@ -125,7 +125,7 @@ else {*/
 		isStarted = false,
 		normalizePath = function(path) {
 			path = (path.indexOf('/') === 0) ? path.substr(1) : path;
-			return path.replace('/', '-');
+			return path.replace(/\//g, '-');
 		};
 
 	
