@@ -35,8 +35,7 @@ Config documents will mainly be accessed by name. A config document consists of 
 The Database
 ---
 
-There are four Mongo collections used in Confgurine that are required. The first collection is called "config" and stores the actual config values. The second is called "configUsers" and stores the credentials of users who can manage the system. The last collection is called "configTagTypes" and contains all the available tag types and thier priorities. The fourth collection is called "history" and stores a history of each change to a given config document. There is one last optional collection called "logs" if you choose to write your logs to Mongo.
-
+TODO
 
 Installation
 ===
@@ -105,7 +104,7 @@ The main end point that your applications will be using is:
 
 	GET /config
 
-This rend point, by itself, will return all config entries in the system. To filter the result to something more managable, ther are a few query string parameters that you can specify:
+This end point, by itself, will return all config entries in the system. To filter the result to something more managable, ther are a few query string parameters that you can specify:
 
 * ```names```
 	* The ```names``` query string parameter will filter the result to only include config entries with the names you specify
