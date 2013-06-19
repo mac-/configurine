@@ -10,15 +10,15 @@
 		"mongodb":"1.x.x",
 		"underscore": "1.x.x",
 		"async": "0.x.x",
-		"hapi": "1.0.x",
+		"hapi": "1.x.x",
 		"joi": "0.x.x",
 		"lout": "0.x.x",
 		"furball": "0.x.x",
 		"tracer": "0.x.x",
 		"json-schema": "0.2.0",
-		"bcrypt": "0.x.x",
 		"eidetic": "0.x.x",
-		"statsd-client": "0.x.x"
+		"statsd-client": "0.x.x",
+		"node-uuid": "1.x.x"
 	},
 	"devDependencies": {
 		"mocha": "1.x.x",

@@ -6,11 +6,8 @@
 	{
 		"_id"							: { "type" : "object", "required" : false },
 		"name"							: { "type" : "string" , "required" : true },
-		"type"							: { "type" : "string", "enum": ["system", "user"], "required" : true },
-		"sharedKey"						: { "type" : "string", "required" : false },
+		"sharedKey"						: { "type" : "string", "required" : true },
 		"privateKey"					: { "type" : "string", "required" : true },
-		"password"						: { "type" : "string", "required" : false },
-		"applications"					: { "type" : "array", "required" : true, "items": { "type" : "string", "required" : false } },
 		"email"							: { "type" : "string", "required" : true },
 		"isConfirmed"					: { "type" : "boolean", "required" : true },
 		"created"						: { "type" : "date", "required" : false },

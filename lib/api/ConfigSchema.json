@@ -27,6 +27,7 @@
 			}
 		},
 		"isSensitive"						: { "type" : "boolean", "required" : true },
-		"isActive"							: { "type" : "boolean", "required" : true }
+		"isActive"							: { "type" : "boolean", "required" : true },
+		"owner"								: { "type" : "string", "required" : true }
 	}
 }

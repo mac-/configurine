@@ -118,6 +118,8 @@ else {*/
 		configController = new ConfigController(options),
 		AuthenticationController = require('./lib/AuthenticationController'),
 		authController = new AuthenticationController(options),
+		ClientController = require('./lib/ClientController'),
+		clientController = new ClientController(options),
 		listenPort = config.listenPort || 8088,
 		server = Hapi.createServer(listenPort),
 		authHelper = new AuthHelper(options),
@@ -139,6 +141,7 @@ else {*/
 
 	server.route(configController.routes);
 	server.route(authController.routes);
+	server.route(clientController.routes);
 
 
 	server.ext('onRequest', function (request, next) {
