@@ -10,6 +10,18 @@ For example, you could have two config values named "myConfig", and each one is 
 
 This centralized system provides an easy mechanism for using application-specific or environment-specific config for all of your applications, regardless of what technology they are using.
 
+* [Goals](#goals)
+* [The Design](#the-design)
+	* [Config Entries](#config-entries)
+	* [The Database](#the-database)
+* [Installation](#installation)
+* [Running the Tests](#running-the-tests)
+* [Running the App](#running-the-app)
+* [Using the App](#using-the-app)
+	* [Main API](#main-api)
+* [Authentication](#authentication)
+* [License](#license)
+
 # Goals
 
 * should be available to both client and server apps
@@ -29,6 +41,7 @@ Config documents will mainly be accessed by name. A config document consists of 
 * associations: A collection of associations that describe the relationships to environments and applications
 * isActive: A flag that marks whether or not this config entry is available to consumers
 * isSensitive: A flag that marks whether or not this config entry requires authentication in order to be available to conumers
+* owner: The ID of the client that created the entry
 
 ## The Database
 
@@ -86,7 +99,12 @@ Example usage:
 
 	$ node app.js -o my.mongo.instance:27017 -u admin -p password
 
-You may also specify values for the options in env variables. The format of the option name is camelcase with dashes removed (so "log-level" would be "logLevel"). If a value is specified in both env vars and the command line args, the env vars value will take precedence.
+You may also specify values for the options in environment variables or in a JSON file called `opter.json` at the root of the project. The format of the option name is camelcase with dashes removed (so "log-level" would be "logLevel"). The order of precedence is as follows:
+
+1. command line args
+2. environment variables
+3. opter.json file
+4. default value
 
 # Using the App
 
