@@ -1,5 +1,5 @@
-configurine
-===
+# configurine
+
 
 [![Build Status](https://secure.travis-ci.org/mac-/configurine.png)](http://travis-ci.org/mac-/configurine)
 [![Dependency Status](https://david-dm.org/mac-/configurine.png)](https://david-dm.org/mac-/configurine)
@@ -10,19 +10,17 @@ For example, you could have two config values named "myConfig", and each one is 
 
 This centralized system provides an easy mechanism for using application-specific or environment-specific config for all of your applications, regardless of what technology they are using.
 
-Goals
-===
+# Goals
+
 * should be available to both client and server apps
 * should be able to act as a centralized system
 * should be easy to add/change values (REST interface)
 * should allow multiple values with the same name
 * management of config can be automated with scripts or through a nice GUI
 
-The Design
-===
+# The Design
 
-Config Entries
----
+## Config Entries
 
 Config documents will mainly be accessed by name. A config document consists of the following properties:
 
@@ -32,13 +30,11 @@ Config documents will mainly be accessed by name. A config document consists of 
 * isActive: A flag that marks whether or not this config entry is available to consumers
 * isSensitive: A flag that marks whether or not this config entry requires authentication in order to be available to conumers
 
-The Database
----
+## The Database
 
 TODO
 
-Installation
-===
+# Installation
 
 You'll need:
 
@@ -54,8 +50,7 @@ Pull down the source code and run the tests to make sure everything you are in a
 
 
 
-Running the Tests
-===
+# Running the Tests
 
 Configurine comes with a set of unit tests, and a set of automated integration tests. To run the unit tests run the following command:
 
@@ -65,8 +60,7 @@ To run the integration tests, you'll need a Mongo DB instance set up since the t
 
 	$ make integration
 
-Running the App
-===
+# Running the App
 
 You can run configurine with the -h flag to see the various options:
 
@@ -94,11 +88,88 @@ Example usage:
 
 You may also specify values for the options in env variables. The format of the option name is camelcase with dashes removed (so "log-level" would be "logLevel"). If a value is specified in both env vars and the command line args, the env vars value will take precedence.
 
-Using the App
-===
+# Using the App
 
-Main API
----
+## Authentication
+
+Almost all requests made to the config routes require you to be authenticated. Configurine looks for the presence of the `Authorization` request header and attempts to authenticate the request based on the value of that `Authorzation` header, also called an auth token.
+
+### Getting an Auth Token
+
+A token can be acquired by issuing a POST request to the `/token` end point. The post body should contain the following information:
+
+* `grant_type` - the type of grant that is being requested. In this case it will be: `client_credentials`
+* `client_id` - the ID of the client to get a token for
+* `timestamp` - the number of milliseconds since 00:00 January 1st, 1970
+* `signature` - a sha1 HMAC of the client_id and timestamp joined with a `:` character and hashed with the client's shared key
+
+Here's an example request:
+
+```
+POST http://localhost:8088/token HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials&client_id=myclient&timestamp=1371666450772&signature=5f794da2837c18919f1b8791f21238b7a64acf30
+```
+
+And the response might look like:
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Content-Length: 103
+Cache-Control: no-cache
+Date: Wed, 19 Jun 2013 18:30:27 GMT
+
+{"access_token":"system:myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811"}
+```
+
+Here is some sample JS (NodeJS) code to generate the signature for the above request:
+
+```javascript
+var crypto = require('crypto');
+var clientId = 'myclient';
+var sharedKey = 'a1c1f962-bc57-4109-8d49-bee9f562b321';
+var timestamp = 1371666450772;
+var signature = crypto.createHmac('sha1', sharedKey).update(clientId + ':' + timestamp).digest('hex'); //5f794da2837c18919f1b8791f21238b7a64acf30
+```
+
+**Notes:**
+
+* The shared key is a UUID that get's issued when a client registers with configurine (see below). This value should be kept secret in order to prevent a third party from impersonating your client.
+* The `timestamp` has a tolerance of +/- 10 minutes; meaning the time on the system issuing the request has to be within 10 minutes of the time of the server hosting configurine.
+
+### Getting a Shared Key
+
+In order to get a shared key, you'll need to register a client with the configurine. All that's required is a unique client ID and an email address. The client ID is used to  identify the client that is interacting with the system. To register a new client, you issue a POST request to the `/register` endpoint and include your desired client ID and email address like so:
+
+```
+POST http://localhost:8088/register
+Content-Type: application/x-www-form-urlencoded
+
+client_id=myclient&email=myclient@gmail.com
+```
+
+Then you'll end up with a JSON response that contains a sharedKey, like so:
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Content-Length: 101
+Cache-Control: no-cache
+Date: Wed, 19 Jun 2013 18:25:57 GMT
+Connection: keep-alive
+
+{"sharedKey":"16f46698-cad8-4134-9691-a8212a626849","email":"myclient@gmail.com","isConfirmed":false}
+```
+
+**Notes:**
+
+* If you provide a client ID that already exists in the system, you'll end up getting a 409 Conflict response code, and will need to choose a different client ID.
+
+## Config API
+
+### GET /config
 
 The main end point that your applications will be using is:
 
@@ -148,17 +219,11 @@ It is also possible to mix and match these parameters as you see fit to get the 
 
 As you can see, there are multiple values for the config entry named "loglevel". Therefore it is up to the application to decide which one to use. In this case, if my application is named "myapp", then I may want to just change the GET request to incorporate the query string parameter for associations to narrow down the results so that my application doesn't have to do as much work to determine which value to use. For example, I could change the request to ```GET /config?names=loglevel&associations=application|myapp|2.0.0``` to narrow the result down to one entry.
 
-
-Authentication
-===
-
-These routes require [basic authentication](http://en.wikipedia.org/wiki/Basic_access_authentication). So an example curl request might look like:
-
-	$ curl -u user:user 'http://127.0.0.1:8088/configEntries/502fd3839702c7f81e000001'
+It's usually a not a good idea to have multiple config entries with identical associations and names. If you avoid this practice, and always provide the `names` and `associations` query string parameters, then you will always get a response with one item, and allows the consumer to not have to do any work in determining which entry to use.
 
 
-License
-===
+# License
+
 The MIT License (MIT) Copyright (c) 2012 Mac Angell
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
