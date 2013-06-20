@@ -10,17 +10,17 @@ For example, you could have two config values named "myConfig", and each one is 
 
 This centralized system provides an easy mechanism for using application-specific or environment-specific config for all of your applications, regardless of what technology they are using.
 
-* [Goals]
-* [The Design]
-	* [Config Entries]
-	* [The Database]
-* [Installation]
-* [Running the Tests]
-* [Running the App]
-* [Using the App]
-	* [Main API]
-* [Authentication]
-* [License]
+* [Goals](#goals)
+* [The Design](#the-design)
+	* [Config Entries](#config-entries)
+	* [The Database](#the-database)
+* [Installation](#installation)
+* [Running the Tests](#running-the-tests)
+* [Running the App](#running-the-app)
+* [Using the App](#using-the-app)
+	* [Main API](#main-api)
+* [Authentication](#authentication)
+* [License](#license)
 
 Goals
 ===
