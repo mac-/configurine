@@ -18,8 +18,15 @@ This centralized system provides an easy mechanism for using application-specifi
 * [Running the Tests](#running-the-tests)
 * [Running the App](#running-the-app)
 * [Using the App](#using-the-app)
-	* [Main API](#main-api)
-* [Authentication](#authentication)
+	* [Authentication](#authentication)
+		* [Getting an Auth Token](#getting-an-auth-token)
+		* [Getting a Shared Key](#getting-a-shared-key)
+	* [Config API](#config-api)
+		* [GET /config](#get-config)
+		* [POST /config](#post-config)
+		* [GET /config/{id}](get-configid)
+		* [PUT /config/{id}](put-configid)
+		* [DELETE /config/{id}](delete-configid)
 * [License](#license)
 
 # Goals
@@ -135,11 +142,8 @@ And the response might look like:
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Content-Length: 103
-Cache-Control: no-cache
-Date: Wed, 19 Jun 2013 18:30:27 GMT
 
-{"access_token":"system:myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811"}
+{"access_token":"myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811"}
 ```
 
 Here is some sample JS (NodeJS) code to generate the signature for the above request:
@@ -154,7 +158,7 @@ var signature = crypto.createHmac('sha1', sharedKey).update(clientId + ':' + tim
 
 **Notes:**
 
-* The shared key is a UUID that get's issued when a client registers with configurine (see below). This value should be kept secret in order to prevent a third party from impersonating your client.
+* The shared key is a UUID that get's issued when a client registers with configurine (see below). This value should be kept secret in order to prevent a third party from impersonating your client. Never use this key in any browser-based code!
 * The `timestamp` has a tolerance of +/- 10 minutes; meaning the time on the system issuing the request has to be within 10 minutes of the time of the server hosting configurine.
 
 ### Getting a Shared Key
@@ -173,10 +177,6 @@ Then you'll end up with a JSON response that contains a sharedKey, like so:
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Content-Length: 101
-Cache-Control: no-cache
-Date: Wed, 19 Jun 2013 18:25:57 GMT
-Connection: keep-alive
 
 {"sharedKey":"16f46698-cad8-4134-9691-a8212a626849","email":"myclient@gmail.com","isConfirmed":false}
 ```
@@ -220,7 +220,8 @@ It is also possible to mix and match these parameters as you see fit to get the 
 			"environments": []
 		},
 		"isSensitive": false,
-		"isActive": true
+		"isActive": true,
+		"owner": "some_client_id"
 	}, {
 		"name": "loglevel",
 		"value": "info",
@@ -232,13 +233,139 @@ It is also possible to mix and match these parameters as you see fit to get the 
 			"environments": []
 		},
 		"isSensitive": false,
-		"isActive": true
+		"isActive": true,
+		"owner": "some_client_id"
 	}]
 
 As you can see, there are multiple values for the config entry named "loglevel". Therefore it is up to the application to decide which one to use. In this case, if my application is named "myapp", then I may want to just change the GET request to incorporate the query string parameter for associations to narrow down the results so that my application doesn't have to do as much work to determine which value to use. For example, I could change the request to ```GET /config?names=loglevel&associations=application|myapp|2.0.0``` to narrow the result down to one entry.
 
-It's usually a not a good idea to have multiple config entries with identical associations and names. If you avoid this practice, and always provide the `names` and `associations` query string parameters, then you will always get a response with one item, and allows the consumer to not have to do any work in determining which entry to use.
 
+**Notes:**
+* This end point is also the only config route where the auth token is optional. When it is provided and valid, you are able to retrieve config entries that have the `isSensitive` property flagged as true. Otherwise, as an unauthenticated route, only non-senstive config entries are available. 
+* It's usually a not a good idea to have multiple config entries with identical associations and names. If you avoid this practice, and always provide the `names` and `associations` query string parameters, then you will always get a response with one item, and allows the consumer to not have to do any work in determining which entry to use.
+
+
+### POST /config
+
+To create new config entries in the system, you can issue a POST request to the `/config` end point.
+
+Example Request:
+
+```
+POST http://localhost:8088/config
+Content-Type: application/json
+Authorization: myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811
+
+{
+	"name": "loglevel",
+	"value": "error",
+	"associations": {
+		"applications": [],
+		"environments": ["production"],
+	},
+	"isSensitive": false,
+	"isActive": true
+}
+```
+
+Example Response:
+
+```
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=utf-8
+Location: http://localhost:8088/config/12345
+```
+
+**Notes:**
+
+* The `id` and `owner` properties are not needed when POSTing a new entry. The `id` is created internally and returned as a part of the location response header. The `owner` is automatically assigned to the client ID of the authenticated client.
+
+### GET /config/{id}
+
+To get a single config entry by ID, you can issue a GET request to the `/config/{id}` end point.
+
+Example Request:
+
+```
+GET http://localhost:8088/config/12345
+Authorization: myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811
+```
+
+Example Response:
+
+```
+HTTP/1.1 200 Ok
+Content-Type: application/json; charset=utf-8
+
+{
+	"id": "12345",
+	"name": "loglevel",
+	"value": "error",
+	"associations": {
+		"applications": [],
+		"environments": ["production"],
+	},
+	"isSensitive": false,
+	"isActive": true,
+	"owner": "myclient"
+}
+```
+
+### PUT /config/{id}
+
+To update a single config entry by ID, you can issue a PUT request to the `/config/{id}` end point.
+
+Example Request:
+
+```
+PUT http://localhost:8088/config/12345
+Content-Type: application/json
+Authorization: myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811
+
+{
+	"name": "loglevel",
+	"value": "info",
+	"associations": {
+		"applications": [],
+		"environments": ["production"],
+	},
+	"isSensitive": false,
+	"isActive": true,
+	"owner": 'myclient'
+}
+```
+
+Example Response:
+
+```
+HTTP/1.1 204 No Content
+```
+
+**Notes:**
+
+* The authenticated client has to be the owner of the config entry being updated.
+* Be careful when updating the owner of a config entry. Once changed, the entry can no longer be updated by the previous owner.
+
+### DELETE /config/{id}
+
+To remove a single config entry by ID, you can issue a DELETE request to the `/config/{id}` end point.
+
+Example Request:
+
+```
+DELETE http://localhost:8088/config/12345
+Authorization: myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811
+```
+
+Example Response:
+
+```
+HTTP/1.1 204 No Content
+```
+
+**Notes:**
+
+* The authenticated client has to be the owner of the config entry being deleted.
 
 # License
 
