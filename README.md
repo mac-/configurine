@@ -24,9 +24,9 @@ This centralized system provides an easy mechanism for using application-specifi
 	* [Config API](#config-api)
 		* [GET /config](#get-config)
 		* [POST /config](#post-config)
-		* [GET /config/{id}](get-configid)
-		* [PUT /config/{id}](put-configid)
-		* [DELETE /config/{id}](delete-configid)
+		* [GET /config/{id}](#get-configid)
+		* [PUT /config/{id}](#put-configid)
+		* [DELETE /config/{id}](#delete-configid)
 * [License](#license)
 
 # Goals
