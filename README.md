@@ -11,9 +11,6 @@ For example, you could have two config values named "myConfig", and each one is 
 This centralized system provides an easy mechanism for using application-specific or environment-specific config for all of your applications, regardless of what technology they are using.
 
 * [Goals](#goals)
-* [The Design](#the-design)
-	* [Config Entries](#config-entries)
-	* [The Database](#the-database)
 * [Installation](#installation)
 * [Running the Tests](#running-the-tests)
 * [Running the App](#running-the-app)
@@ -36,23 +33,6 @@ This centralized system provides an easy mechanism for using application-specifi
 * should be easy to add/change values (REST interface)
 * should allow multiple values with the same name
 * management of config can be automated with scripts or through a nice GUI
-
-# The Design
-
-## Config Entries
-
-Config documents will mainly be accessed by name. A config document consists of the following properties:
-
-* name: The name of the config entry that comsumers will request values by
-* value: The value of the config entry that contains the data necessary for consumers
-* associations: A collection of associations that describe the relationships to environments and applications
-* isActive: A flag that marks whether or not this config entry is available to consumers
-* isSensitive: A flag that marks whether or not this config entry requires authentication in order to be available to conumers
-* owner: The ID of the client that created the entry
-
-## The Database
-
-TODO
 
 # Installation
 
@@ -187,11 +167,47 @@ Content-Type: application/json; charset=utf-8
 
 ## Config API
 
+Config entries will mainly be accessed by name. A config document consists of the following properties:
+
+* `id`: A unique string assigned by Configurine to any new config entry
+* `name`: The name of the config entry that comsumers will request values by
+* `value`: The value of the config entry that contains the data necessary for consumers
+* `associations`: A collection of associations that describe the relationships to environments and applications
+* `isActive`: A flag that marks whether or not this config entry is available to consumers
+* `isSensitive`: A flag that marks whether or not this config entry requires authentication in order to be available to conumers
+* `owner`: The ID of the client that created the entry
+
 ### GET /config
 
-The main end point that your applications will be using is:
+This is the main end point that your applications will be using to rerieve config entries from configurine. 
 
-	GET /config
+Example Request:
+
+```
+GET http://localhost:8088/config?isActive=true&names=loglevel&associations=environment|production
+Content-Type: application/json
+Authorization: myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811
+```
+
+Example Response:
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+[{
+	"id": "519bc51c9b9c05f772000001",
+	"name": "loglevel",
+	"value": "error",
+	"associations": {
+		"applications": [],
+		"environments": ["production"],
+	},
+	"isSensitive": false,
+	"isActive": true,
+	"owner": "myclient"
+}]
+```
 
 This end point, by itself, will return all config entries in the system. To filter the result to something more managable, ther are a few query string parameters that you can specify:
 
@@ -210,6 +226,7 @@ This end point, by itself, will return all config entries in the system. To filt
 It is also possible to mix and match these parameters as you see fit to get the result you want. It is possible that the results of these requests to contain config entries with the same name. Therefore it is up to the consumer to provide the logic for parsing out the values that their application should consume. For example, A request to ```GET /config?names=loglevel``` could return the following result:
 
 	[{
+		"id": "519bc51c9b9c05f772000001",
 		"name": "loglevel",
 		"value": "error",
 		"associations": {
@@ -223,6 +240,7 @@ It is also possible to mix and match these parameters as you see fit to get the 
 		"isActive": true,
 		"owner": "some_client_id"
 	}, {
+		"id": "519bc51c9b9c05f772999887",
 		"name": "loglevel",
 		"value": "info",
 		"associations": {
@@ -273,7 +291,7 @@ Example Response:
 ```
 HTTP/1.1 201 Created
 Content-Type: application/json; charset=utf-8
-Location: http://localhost:8088/config/12345
+Location: http://localhost:8088/config/519bc51c9b9c05f772000001
 ```
 
 **Notes:**
@@ -287,7 +305,7 @@ To get a single config entry by ID, you can issue a GET request to the `/config/
 Example Request:
 
 ```
-GET http://localhost:8088/config/12345
+GET http://localhost:8088/config/519bc51c9b9c05f772000001
 Authorization: myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811
 ```
 
@@ -298,7 +316,7 @@ HTTP/1.1 200 Ok
 Content-Type: application/json; charset=utf-8
 
 {
-	"id": "12345",
+	"id": "519bc51c9b9c05f772000001",
 	"name": "loglevel",
 	"value": "error",
 	"associations": {
@@ -318,11 +336,12 @@ To update a single config entry by ID, you can issue a PUT request to the `/conf
 Example Request:
 
 ```
-PUT http://localhost:8088/config/12345
+PUT http://localhost:8088/config/519bc51c9b9c05f772000001
 Content-Type: application/json
 Authorization: myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811
 
 {
+	"id": "519bc51c9b9c05f772000001",
 	"name": "loglevel",
 	"value": "info",
 	"associations": {
@@ -353,7 +372,7 @@ To remove a single config entry by ID, you can issue a DELETE request to the `/c
 Example Request:
 
 ```
-DELETE http://localhost:8088/config/12345
+DELETE http://localhost:8088/config/519bc51c9b9c05f772000001
 Authorization: myclient:1371666627113:1371670227113:47a8cdf5560706874688726cb1b3e843783c0811
 ```
 
