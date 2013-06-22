@@ -138,7 +138,7 @@ var signature = crypto.createHmac('sha1', sharedKey).update(clientId + ':' + tim
 
 **Notes:**
 
-* The shared key is a UUID that get's issued when a client registers with configurine (see below). This value should be kept secret in order to prevent a third party from impersonating your client. Never use this key in any browser-based code!
+* The shared key is a UUID that gets issued when a client registers with configurine (see below). This value should be kept secret in order to prevent a third party from impersonating your client. Never use this key in any browser-based code!
 * The `timestamp` has a tolerance of +/- 10 minutes; meaning the time on the system issuing the request has to be within 10 minutes of the time of the server hosting configurine.
 
 ### Getting a Shared Key
@@ -255,12 +255,12 @@ It is also possible to mix and match these parameters as you see fit to get the 
 		"owner": "some_client_id"
 	}]
 
-As you can see, there are multiple values for the config entry named "loglevel". Therefore it is up to the application to decide which one to use. In this case, if my application is named "myapp", then I may want to just change the GET request to incorporate the query string parameter for associations to narrow down the results so that my application doesn't have to do as much work to determine which value to use. For example, I could change the request to ```GET /config?names=loglevel&associations=application|myapp|2.0.0``` to narrow the result down to one entry.
+As you can see, there are multiple values for the config entry named "loglevel". In this case, if my application is named "myapp", then I may want to just change the GET request to incorporate the query string parameter for associations to narrow down the results so that my application doesn't have to do as much work to determine which value to use. For example, I could change the request to ```GET /config?names=loglevel&associations=application|myapp|2.0.0``` to narrow the result down to one entry.
 
 
 **Notes:**
 * This end point is also the only config route where the auth token is optional. When it is provided and valid, you are able to retrieve config entries that have the `isSensitive` property flagged as true. Otherwise, as an unauthenticated route, only non-senstive config entries are available. 
-* It's usually a not a good idea to have multiple config entries with identical associations and names. If you avoid this practice, and always provide the `names` and `associations` query string parameters, then you will always get a response with one item, and allows the consumer to not have to do any work in determining which entry to use.
+* It's usually a not a good idea to have multiple config entries with identical associations and names. If you avoid this practice, and always provide the `names` and `associations` query string parameters, then you will always get a response with one item, which allows the consumer to not have to do any work in determining which entry to use.
 
 
 ### POST /config
