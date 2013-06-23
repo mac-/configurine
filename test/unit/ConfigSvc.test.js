@@ -1,6 +1,8 @@
 var assert = require('assert'),
+	sinon = require('sinon'),
 	ConfigSvc = require('../../lib/api/ConfigSvc.js'),
 	_ = require('underscore'),
+	mockDb = sinon.mock(require('mongodb').Db)
 	cfgSvc = new ConfigSvc();
 
 describe('ConfigSvc Unit Tests', function() {
@@ -41,7 +43,13 @@ describe('ConfigSvc Unit Tests', function() {
 			assert(!cloned.modified, 'The modified property should NOT be cloned');
 			done();
 		});
-
+		
+		it('should', function(done) {
+			var dbMock = sinon.mock(cfgSvc._db);
+			dbMock.expects('collection').once().callsArg(1);
+			done();
+		});
+		
 	});
 
 });

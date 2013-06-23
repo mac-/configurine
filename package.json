@@ -26,7 +26,8 @@
 		"jshint": "0.9.0",
 		"request": "2.x.x",
 		"blanket": "1.0.x",
-		"travis-cov": "0.2.x"
+		"travis-cov": "0.2.x",
+		"sinon": "1.x.x"
 	},
 	"keywords": [
 		"config"
