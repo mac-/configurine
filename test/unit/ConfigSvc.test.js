@@ -3,7 +3,41 @@ var assert = require('assert'),
 	ConfigSvc = require('../../lib/api/ConfigSvc.js'),
 	_ = require('underscore'),
 	mockDb = sinon.mock(require('mongodb').Db)
-	cfgSvc = new ConfigSvc();
+	cfgSvc = new ConfigSvc(),
+	getMockCollection = function(mockErr, mockResult) {
+		var coll = {
+			ensureIndex: function(obj, opts, cb) {
+				cb(null, 'fnord');
+			},
+			find: function(selector) {
+				var obj = {
+					toArray: function(cb) {
+						cb(mockErr, mockResult);
+					}
+				};
+				return obj;
+				
+			}
+		};
+		return coll;
+	},
+	getMockConfigDoc = function() {
+		var config = {
+		    "_id": "519bc51c9b9c05f772000001",
+		    "name": "loglevel",
+		    "value": "error",
+		    "associations": {
+		        "applications": [],
+		        "environments": ["production"],
+		    },
+		    "isSensitive": false,
+		    "isActive": true,
+		    "owner": "myclient",
+		    "created": new Date(),
+		    "modified": new Date()
+		};
+		return config;
+	};
 
 describe('ConfigSvc Unit Tests', function() {
 	describe('_cloneDocument()', function() {
@@ -43,11 +77,50 @@ describe('ConfigSvc Unit Tests', function() {
 			assert(!cloned.modified, 'The modified property should NOT be cloned');
 			done();
 		});
-		
-		it('should', function(done) {
+	});
+	describe('findAll()', function() {
+		it('should find all config documents', function(done) {
 			var dbMock = sinon.mock(cfgSvc._db);
-			dbMock.expects('collection').once().callsArg(1);
-			done();
+			dbMock.expects('open').once().callsArg(0);
+
+			var coll = getMockCollection(null, [getMockConfigDoc()]);
+			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+
+			cfgSvc.findAll({}, function(err, result) {
+				dbMock.verify();
+				assert(!err);
+				assert.strictEqual(result[0]._id, '519bc51c9b9c05f772000001');
+				done();
+			});
+		});
+
+		it('should find all config documents with default selector', function(done) {
+			var dbMock = sinon.mock(cfgSvc._db);
+			dbMock.expects('open').once().callsArg(0);
+
+			var coll = getMockCollection(null, [getMockConfigDoc()]);
+			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+
+			cfgSvc.findAll(function(err, result) {
+				dbMock.verify();
+				assert(!err);
+				assert.strictEqual(result[0]._id, '519bc51c9b9c05f772000001');
+				done();
+			});
+		});
+
+		it('should return error when findAll connot complete', function(done) {
+			var dbMock = sinon.mock(cfgSvc._db);
+			dbMock.expects('open').once().callsArg(0);
+
+			var coll = getMockCollection(new Error(), null);
+			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+
+			cfgSvc.findAll(function(err, result) {
+				dbMock.verify();
+				assert(err);
+				done();
+			});
 		});
 		
 	});

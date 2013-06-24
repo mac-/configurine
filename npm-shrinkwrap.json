@@ -183,9 +183,9 @@
       }
     },
     "furball": {
-      "version": "0.3.0",
+      "version": "0.3.1",
       "from": "furball@0.x.x",
-      "resolved": "https://registry.npmjs.org/furball/-/furball-0.3.0.tgz",
+      "resolved": "https://registry.npmjs.org/furball/-/furball-0.3.1.tgz",
       "dependencies": {
         "hoek": {
           "version": "0.8.5",
@@ -260,6 +260,25 @@
         }
       }
     },
+    "sinon": {
+      "version": "1.7.3",
+      "from": "sinon@1.x.x",
+      "resolved": "https://registry.npmjs.org/sinon/-/sinon-1.7.3.tgz",
+      "dependencies": {
+        "buster-format": {
+          "version": "0.5.5",
+          "from": "buster-format@~0.5",
+          "resolved": "https://registry.npmjs.org/buster-format/-/buster-format-0.5.5.tgz",
+          "dependencies": {
+            "buster-core": {
+              "version": "0.6.4",
+              "from": "buster-core@>=0.6.2",
+              "resolved": "https://registry.npmjs.org/buster-core/-/buster-core-0.6.4.tgz"
+            }
+          }
+        }
+      }
+    },
     "blanket": {
       "version": "1.0.9",
       "from": "blanket@1.0.x",
@@ -281,9 +300,9 @@
           "resolved": "https://registry.npmjs.org/requirejs/-/requirejs-2.1.6.tgz"
         },
         "xtend": {
-          "version": "2.0.5",
+          "version": "2.0.6",
           "from": "xtend@~2.0.3",
-          "resolved": "https://registry.npmjs.org/xtend/-/xtend-2.0.5.tgz",
+          "resolved": "https://registry.npmjs.org/xtend/-/xtend-2.0.6.tgz",
           "dependencies": {
             "is-object": {
               "version": "0.1.2",
