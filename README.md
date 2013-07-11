@@ -232,7 +232,7 @@ It is also possible to mix and match these parameters as you see fit to get the 
 		"associations": {
 			"applications": [{
 				"name": "myapp",
-				"version": "1.0.0"
+				"versions": ["1.0.0"]
 			}],
 			"environments": []
 		},
@@ -246,7 +246,7 @@ It is also possible to mix and match these parameters as you see fit to get the 
 		"associations": {
 			"applications": [{
 				"name": "myapp",
-				"version": "2.0.0"
+				"versions": ["2.0.0"]
 			}],
 			"environments": []
 		},
