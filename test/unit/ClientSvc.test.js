@@ -37,6 +37,7 @@ var assert = require('assert'),
 		    "sharedKey": "somekey",
 		    "email": "myemail@gmail.com",
 		    "isConfirmed": false,
+		    "isAdmin": false,
 		    "privateKey": '841239874078ac8f809e098d',
 		    "created": new Date(),
 		    "modified": new Date()
