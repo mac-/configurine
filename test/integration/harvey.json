@@ -1,0 +1,355 @@
+{
+	"requestTemplates": [
+		{
+			"id": "base",
+			"protocol": "${protocol}",
+			"host": "${host}"
+		},
+		{
+			"id": "json",
+			"headers": {
+				"content-type": "application/json"
+			}
+		},
+		{
+			"id": "form",
+			"headers": {
+				"content-type": "application/x-www-form-urlencoded"
+			}
+		},
+		{
+			"id": "authTokenHeader",
+			"headers": {
+				"authorization": "${adminAccessToken}"
+			}
+		},
+		{
+			"id": "postClientBody",
+			"body": {
+				"email": "test@test.com",
+				"clientId": "${testClientId}"
+			}
+		},
+		{
+			"id": "putClientBody",
+			"body": {
+				"email": "test@test.com",
+				"clientId": "${testClientId}",
+				"isConfirmed": true,
+				"isAdmin": false
+			}
+		}
+		
+	],
+	"responseTemplates": [
+		{
+			"id": "json",
+			"headers": {
+				"content-type": "application/json"
+			}
+		},
+		{
+			"id": "errorBody",
+			"body": {
+				"code": { "$exists": true },
+				"error": { "$exists": true }
+			}
+		},
+		{
+			"id": "created",
+			"statusCode": 201,
+			"headers": {
+				"location": { "$regex": "clients/${testClientId}" }
+			}
+		}
+	],
+	"setupAndTeardowns":[
+		{
+			"id": "getRandomClientId",
+			"actions": [{
+				"$set": {
+					"testClientId": {
+						"$random": {
+							"type": "string",
+							"length": 10
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "getTimestamp",
+			"actions": [{
+				"$set": {
+					"timestamp": {
+						"$now": {}
+					}
+				}
+			}]
+		},
+		{
+			"id": "getAdminSignature",
+			"actions": [{
+				"$set": {
+					"signature": {
+						"$crypto": {
+							"macType": "HMAC",
+							"algorithm": "sha1",
+							"data": "${adminClientId}:${timestamp}",
+							"key": "${adminKey}",
+							"encoding": "hex"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "getAdminToken",
+			"request": {
+				"templates": ["base", "form"],
+				"method": "POST",
+				"resource": "/token",
+				"body": {
+					"grant_type": "client_credentials",
+					"client_id": "${adminClientId}",
+					"timestamp": "${timestamp}",
+					"signature": "${signature}"
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200
+			},
+			"actions": [{
+				"$set": {
+					"adminAccessToken": {
+						"$extract": "body.access_token"
+					}
+				}
+			}]
+		},
+		{
+			"id": "removeClient",
+			"request": {
+				"templates": ["base", "json"],
+				"method": "DELETE",
+				"resource": "/clients/${testClientId}",
+				"headers": {
+					"Authorization": "${adminAccessToken}"
+				}
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
+		},
+		{
+			"id": "createClient",
+			"request": {
+				"templates": ["base", "json", "authTokenHeader", "postClientBody"],
+				"method": "POST",
+				"resource": "/clients"
+			},
+			"expectedResponse": {
+				"templates": ["json", "created"]
+			}
+		}
+	],
+	"suiteSetup": [
+		"getTimestamp",
+		"getAdminSignature",
+		"getAdminToken"
+	],
+	"suiteTeardown": [
+		
+	],
+	"tests": [
+		{
+			"id": "createClient_Success",
+			"setup": ["getRandomClientId"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader", "postClientBody"],
+				"method": "POST",
+				"resource": "/clients"
+			},
+			"expectedResponse": {
+				"templates": ["json", "created"]
+			},
+			"teardown": ["removeClient"]
+		},
+		{
+			"id": "createClient-invalidData_BadRequest",
+			"setup": ["getRandomClientId"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader", "postClientBody"],
+				"method": "POST",
+				"resource": "/clients",
+				"body": {
+					"invalid": "data"
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400,
+				"body": {
+					"message": { "$regex": "invalid.*is not allowed" }
+				}
+			}
+		},
+		{
+			"id": "createClient-missingData_BadRequest",
+			"setup": ["getRandomClientId"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader"],
+				"method": "POST",
+				"resource": "/clients",
+				"body": {
+					"clientId": "${testClientId}"
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400,
+				"body": {
+					"message": { "$regex": "the value of email is not allowed to be undefined" }
+				}
+			}
+		},
+		{
+			"id": "getClient_Success",
+			"setup": ["getRandomClientId", "createClient"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader"],
+				"method": "GET",
+				"resource": "/clients/${testClientId}"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200
+			},
+			"teardown": ["removeClient"]
+		},
+		{
+			"id": "getClient_NotFound",
+			"setup": ["getRandomClientId"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader"],
+				"method": "GET",
+				"resource": "/clients/${testClientId}"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 404
+			}
+		},
+		{
+			"id": "updateClient_Success",
+			"setup": ["getRandomClientId", "createClient"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader", "putClientBody"],
+				"method": "PUT",
+				"resource": "/clients/${testClientId}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			},
+			"teardown": ["removeClient"]
+		},
+		{
+			"id": "updateClient-invalidData_BadRequest",
+			"setup": ["getRandomClientId", "createClient"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader", "putClientBody"],
+				"method": "PUT",
+				"resource": "/clients/${testClientId}",
+				"body": {
+					"invalid": "data"
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400,
+				"body": {
+					"message": { "$regex": "invalid.*is not allowed" }
+				}
+			},
+			"teardown": ["removeClient"]
+		},
+		{
+			"id": "updateClient-missingData_BadRequest",
+			"setup": ["getRandomClientId", "createClient"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader"],
+				"method": "PUT",
+				"resource": "/clients/${testClientId}",
+				"body": {
+					"email": "test@test.com"
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400,
+				"body": {
+					"message": { "$regex": "the value of clientId is not allowed to be undefined" }
+				}
+			},
+			"teardown": ["removeClient"]
+		},
+		{
+			"id": "updateClient_NotFound",
+			"setup": ["getRandomClientId"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader"],
+				"method": "PUT",
+				"resource": "/clients/${testClientId}",
+				"body": {
+					"email": "test@test.com",
+					"clientId": "${testClientId}",
+					"isConfirmed": true,
+					"isAdmin": false
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 404
+			}
+		},
+		{
+			"id": "removeClient_Success",
+			"setup": ["getRandomClientId", "createClient"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader"],
+				"method": "DELETE",
+				"resource": "/clients/${testClientId}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
+		},
+		{
+			"id": "removeClient_NotFound",
+			"setup": ["getRandomClientId"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader"],
+				"method": "DELETE",
+				"resource": "/clients/${testClientId}"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 404
+			}
+		},
+		{
+			"id": "getConfig_Success",
+			"setup": ["getAdminToken"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader"],
+				"method": "GET",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200
+			}
+		}
+	]
+}
