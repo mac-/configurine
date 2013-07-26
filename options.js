@@ -3,12 +3,14 @@ module.exports = {
 		character: 'l',
 		argument: 'port',
 		defaultValue: 8088,
+		type: Number,
 		description: 'The port that the application will listen for incoming HTTP requests on.'
 	},
 	numberProcesses: {
 		character: 'n',
 		argument: 'number',
 		defaultValue: 1,
+		type: Number,
 		description: 'The number of processes to use for this application.'
 	},
 	databaseHost: {
