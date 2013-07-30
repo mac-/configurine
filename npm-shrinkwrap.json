@@ -235,11 +235,6 @@
         }
       }
     },
-    "json-schema": {
-      "version": "0.2.0",
-      "from": "json-schema@0.2.0",
-      "resolved": "https://registry.npmjs.org/json-schema/-/json-schema-0.2.0.tgz"
-    },
     "eidetic": {
       "version": "0.1.1",
       "from": "eidetic@0.x.x",
@@ -528,7 +523,7 @@
         },
         "mime": {
           "version": "1.2.10",
-          "from": "mime@1.2.x",
+          "from": "mime@~1.2.9",
           "resolved": "https://registry.npmjs.org/mime/-/mime-1.2.10.tgz"
         },
         "form-data": {

@@ -15,7 +15,6 @@
 		"lout": "0.x.x",
 		"furball": "0.x.x",
 		"tracer": "0.x.x",
-		"json-schema": "0.2.0",
 		"eidetic": "0.x.x",
 		"statsd-client": "0.x.x",
 		"node-uuid": "1.x.x"
