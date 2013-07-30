@@ -238,14 +238,7 @@
     "eidetic": {
       "version": "0.1.1",
       "from": "eidetic@0.x.x",
-      "resolved": "https://registry.npmjs.org/eidetic/-/eidetic-0.1.1.tgz",
-      "dependencies": {
-        "clone": {
-          "version": "0.1.9",
-          "from": "clone@0.1.x",
-          "resolved": "https://registry.npmjs.org/clone/-/clone-0.1.9.tgz"
-        }
-      }
+      "resolved": "https://registry.npmjs.org/eidetic/-/eidetic-0.1.1.tgz"
     },
     "statsd-client": {
       "version": "0.0.14",
@@ -256,6 +249,11 @@
       "version": "1.4.0",
       "from": "node-uuid@1.x.x",
       "resolved": "https://registry.npmjs.org/node-uuid/-/node-uuid-1.4.0.tgz"
+    },
+    "clone": {
+      "version": "0.1.9",
+      "from": "clone@0.x.x",
+      "resolved": "https://registry.npmjs.org/clone/-/clone-0.1.9.tgz"
     },
     "travis-cov": {
       "version": "0.2.4",

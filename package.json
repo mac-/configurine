@@ -17,7 +17,8 @@
 		"tracer": "0.x.x",
 		"eidetic": "0.x.x",
 		"statsd-client": "0.x.x",
-		"node-uuid": "1.x.x"
+		"node-uuid": "1.x.x",
+		"clone": "0.x.x"
 	},
 	"devDependencies": {
 		"mocha": "1.x.x",

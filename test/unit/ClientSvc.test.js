@@ -1,6 +1,7 @@
 var assert = require('assert'),
 	sinon = require('sinon'),
 	ClientSvc = require('../../lib/api/ClientSvc.js'),
+	clientSchema = require('../../lib/api/ClientSchema.js'),
 	_ = require('underscore'),
 	getMockCollection = function(mockErr, mockResult) {
 		var coll = {
@@ -81,16 +82,16 @@ describe('ClientSvc Unit Tests', function() {
 			var clientSvc = new ClientSvc(),
 				client = getMockClientDoc();
 
-			var cloned = clientSvc._cloneDocument(client);
+			var cloned = clientSvc._cloneDocument(client, clientSchema);
 			assert.strictEqual(cloned.name, client.name, 'The name property should be cloned');
 			assert.strictEqual(cloned.sharedKey, client.sharedKey, 'The sharedKey property should be cloned');
 			assert.strictEqual(cloned.email, client.email, 'The email property should be cloned');
 			assert.strictEqual(cloned.isConfirmed, client.isConfirmed, 'The isConfirmed property should be cloned');
 			assert.strictEqual(cloned.privateKey, client.privateKey, 'The privateKey property should be cloned');
+			assert.strictEqual(cloned.created.getTime(), client.created.getTime(), 'The created property should be cloned');
+			assert.strictEqual(cloned.modified.getTime(), client.modified.getTime(), 'The modified property should be cloned');
 
 			assert(!cloned._id, 'The _id property should NOT be cloned');
-			assert(!cloned.created, 'The created property should NOT be cloned');
-			assert(!cloned.modified, 'The modified property should NOT be cloned');
 			done();
 		});
 	});
@@ -158,7 +159,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockClientDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.findAll({}, function(err, result) {
 				dbMock.verify();
@@ -174,7 +175,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockClientDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.findAll(function(err, result) {
 				dbMock.verify();
@@ -190,7 +191,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.findAll(function(err, result) {
 				dbMock.verify();
@@ -204,7 +205,7 @@ describe('ClientSvc Unit Tests', function() {
 				dbMock = sinon.mock(clientSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('clients').throws(new Error());
 
 			clientSvc.findAll(function(err, result) {
 				dbMock.verify();
@@ -231,7 +232,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			assert.throws(clientSvc.findAll);
 			done();
@@ -248,7 +249,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, getMockClientDoc());
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.findById('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -264,7 +265,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.findById('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -278,7 +279,7 @@ describe('ClientSvc Unit Tests', function() {
 				dbMock = sinon.mock(clientSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('clients').throws(new Error());
 
 			clientSvc.findById('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -305,7 +306,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			assert.throws(clientSvc.findById);
 			done();
@@ -322,7 +323,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockClientDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.findByName('myclient', function(err, result) {
 				dbMock.verify();
@@ -339,7 +340,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.findByName('myclient', function(err, result) {
 				dbMock.verify();
@@ -353,7 +354,7 @@ describe('ClientSvc Unit Tests', function() {
 				dbMock = sinon.mock(clientSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('clients').throws(new Error());
 
 			clientSvc.findByName('myclient', function(err, result) {
 				dbMock.verify();
@@ -380,7 +381,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			assert.throws(clientSvc.findByName);
 			done();
@@ -395,7 +396,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockClientDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.insert(getMockClientDoc(true), function(err, result) {
 				dbMock.verify();
@@ -411,7 +412,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.insert(getMockClientDoc(true), function(err, result) {
 				dbMock.verify();
@@ -425,7 +426,7 @@ describe('ClientSvc Unit Tests', function() {
 				dbMock = sinon.mock(clientSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('clients').throws(new Error());
 
 			clientSvc.insert(getMockClientDoc(true), function(err, result) {
 				dbMock.verify();
@@ -452,7 +453,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.insert({ a:1 }, function(err, result) {
 				dbMock.verify();
@@ -467,7 +468,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			assert.throws(clientSvc.insert);
 			done();
@@ -479,7 +480,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			assert.throws(function() {
 				clientSvc.insert(getMockClientDoc(), function(err, result) {});
@@ -498,7 +499,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, getMockClientDoc());
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.update('519bc51c9b9c05f772000001', getMockClientDoc(), function(err, result) {
 				dbMock.verify();
@@ -514,7 +515,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.update('519bc51c9b9c05f772000001', getMockClientDoc(), function(err, result) {
 				dbMock.verify();
@@ -528,7 +529,7 @@ describe('ClientSvc Unit Tests', function() {
 				dbMock = sinon.mock(clientSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('clients').throws(new Error());
 
 			clientSvc.update('519bc51c9b9c05f772000001', getMockClientDoc(), function(err, result) {
 				dbMock.verify();
@@ -555,7 +556,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.update('519bc51c9b9c05f772000001', { a:1 }, function(err, result) {
 				dbMock.verify();
@@ -570,7 +571,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			assert.throws(clientSvc.update);
 			done();
@@ -586,7 +587,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, getMockClientDoc());
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.remove('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -602,7 +603,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.remove('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -616,7 +617,7 @@ describe('ClientSvc Unit Tests', function() {
 				dbMock = sinon.mock(clientSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('clients').throws(new Error());
 
 			clientSvc.remove('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -643,7 +644,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			assert.throws(clientSvc.remove);
 			done();
@@ -658,7 +659,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, getMockClientDoc());
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.removeAll(function(err, result) {
 				dbMock.verify();
@@ -674,7 +675,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			clientSvc.removeAll(function(err, result) {
 				dbMock.verify();
@@ -688,7 +689,7 @@ describe('ClientSvc Unit Tests', function() {
 				dbMock = sinon.mock(clientSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('clients').throws(new Error());
 
 			clientSvc.removeAll(function(err, result) {
 				dbMock.verify();
@@ -715,7 +716,7 @@ describe('ClientSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
 
 			assert.throws(clientSvc.removeAll);
 			done();

@@ -1,6 +1,7 @@
 var assert = require('assert'),
 	sinon = require('sinon'),
 	ConfigSvc = require('../../lib/api/ConfigSvc.js'),
+	configSchema = require('../../lib/api/ConfigSchema.js'),
 	_ = require('underscore'),
 	getMockCollection = function(mockErr, mockResult) {
 		var coll = {
@@ -104,16 +105,16 @@ describe('ConfigSvc Unit Tests', function() {
 				isActive: true
 			};
 
-			var cloned = cfgSvc._cloneDocument(cfg);
+			var cloned = cfgSvc._cloneDocument(cfg, configSchema);
 			assert.strictEqual(cloned.name, cfg.name, 'The name property should be cloned');
 			assert(_.isEqual(cloned.value, cfg.value), 'The value property should be cloned');
 			assert(_.isEqual(cloned.associations, cfg.associations), 'The associations property should be cloned');
 			assert.strictEqual(cloned.isSensitive, cfg.isSensitive, 'The isSensitive property should be cloned');
 			assert.strictEqual(cloned.isActive, cfg.isActive, 'The isActive property should be cloned');
+			assert.strictEqual(cloned.created.getTime(), cfg.created.getTime(), 'The created property should be cloned');
+			assert.strictEqual(cloned.modified.getTime(), cfg.modified.getTime(), 'The modified property should be cloned');
 
 			assert(!cloned._id, 'The _id property should NOT be cloned');
-			assert(!cloned.created, 'The created property should NOT be cloned');
-			assert(!cloned.modified, 'The modified property should NOT be cloned');
 			done();
 		});
 	});
@@ -181,7 +182,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockConfigDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findAll({}, function(err, result) {
 				dbMock.verify();
@@ -197,7 +198,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockConfigDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findAll(function(err, result) {
 				dbMock.verify();
@@ -213,7 +214,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findAll(function(err, result) {
 				dbMock.verify();
@@ -227,7 +228,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.findAll(function(err, result) {
 				dbMock.verify();
@@ -254,7 +255,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.findAll);
 			done();
@@ -271,7 +272,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, getMockConfigDoc());
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findById('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -287,7 +288,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findById('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -301,7 +302,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.findById('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -328,7 +329,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.findById);
 			done();
@@ -345,7 +346,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockConfigDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findByName('loglevel', function(err, result) {
 				dbMock.verify();
@@ -362,7 +363,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findByName('loglevel', function(err, result) {
 				dbMock.verify();
@@ -376,7 +377,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.findByName('loglevel', function(err, result) {
 				dbMock.verify();
@@ -403,7 +404,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.findByName);
 			done();
@@ -419,7 +420,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockConfigDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findByApplicationAssociation('myapp', '1.0.0', function(err, result) {
 				dbMock.verify();
@@ -435,7 +436,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findByApplicationAssociation('myapp', '1.0.0', function(err, result) {
 				dbMock.verify();
@@ -449,7 +450,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.findByApplicationAssociation('myapp', '1.0.0', function(err, result) {
 				dbMock.verify();
@@ -476,7 +477,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.findByApplicationAssociation);
 			done();
@@ -493,7 +494,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockConfigDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findByEnvironmentAssociation('production', function(err, result) {
 				dbMock.verify();
@@ -509,7 +510,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findByEnvironmentAssociation('production', function(err, result) {
 				dbMock.verify();
@@ -523,7 +524,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.findByEnvironmentAssociation('production', function(err, result) {
 				dbMock.verify();
@@ -550,7 +551,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.findByEnvironmentAssociation);
 			done();
@@ -566,7 +567,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockConfigDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findByNameAndEnvironmentAssociation('loglevel', 'production', function(err, result) {
 				dbMock.verify();
@@ -582,7 +583,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.findByNameAndEnvironmentAssociation('loglevel', 'production', function(err, result) {
 				dbMock.verify();
@@ -596,7 +597,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.findByNameAndEnvironmentAssociation('loglevel', 'production', function(err, result) {
 				dbMock.verify();
@@ -623,7 +624,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.findByNameAndEnvironmentAssociation);
 			done();
@@ -640,10 +641,11 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, [getMockConfigDoc()]);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.insert(getMockConfigDoc(true), function(err, result) {
 				dbMock.verify();
+				console.log(err, result);
 				assert(!err);
 				assert.strictEqual(result._id, '519bc51c9b9c05f772000001');
 				done();
@@ -656,7 +658,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.insert(getMockConfigDoc(true), function(err, result) {
 				dbMock.verify();
@@ -670,7 +672,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.insert(getMockConfigDoc(true), function(err, result) {
 				dbMock.verify();
@@ -697,7 +699,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.insert({ a:1 }, function(err, result) {
 				dbMock.verify();
@@ -712,7 +714,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.insert);
 			done();
@@ -724,7 +726,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(function() {
 				cfgSvc.insert(getMockConfigDoc(), function(err, result) {});
@@ -743,7 +745,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, getMockConfigDoc());
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.update('519bc51c9b9c05f772000001', getMockConfigDoc(), function(err, result) {
 				dbMock.verify();
@@ -759,7 +761,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.update('519bc51c9b9c05f772000001', getMockConfigDoc(), function(err, result) {
 				dbMock.verify();
@@ -773,7 +775,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.update('519bc51c9b9c05f772000001', getMockConfigDoc(), function(err, result) {
 				dbMock.verify();
@@ -800,7 +802,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.update('519bc51c9b9c05f772000001', { a:1 }, function(err, result) {
 				dbMock.verify();
@@ -815,7 +817,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.update);
 			done();
@@ -831,7 +833,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, getMockConfigDoc());
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.remove('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -847,7 +849,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.remove('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -861,7 +863,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.remove('519bc51c9b9c05f772000001', function(err, result) {
 				dbMock.verify();
@@ -888,7 +890,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.remove);
 			done();
@@ -903,7 +905,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(null, getMockConfigDoc());
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.removeAll(function(err, result) {
 				dbMock.verify();
@@ -919,7 +921,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			cfgSvc.removeAll(function(err, result) {
 				dbMock.verify();
@@ -933,7 +935,7 @@ describe('ConfigSvc Unit Tests', function() {
 				dbMock = sinon.mock(cfgSvc._db);
 			dbMock.expects('open').once().callsArg(0);
 
-			dbMock.expects('collection').once().callsArgWith(1, new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('config').throws(new Error());
 
 			cfgSvc.removeAll(function(err, result) {
 				dbMock.verify();
@@ -960,7 +962,7 @@ describe('ConfigSvc Unit Tests', function() {
 			dbMock.expects('open').once().callsArg(0);
 
 			var coll = getMockCollection(new Error(), null);
-			dbMock.expects('collection').once().callsArgWith(1, null, coll);
+			dbMock.expects('collection').once().withExactArgs('config').returns(coll);
 
 			assert.throws(cfgSvc.removeAll);
 			done();
