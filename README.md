@@ -143,27 +143,45 @@ var signature = crypto.createHmac('sha1', sharedKey).update(clientId + ':' + tim
 
 ### Getting a Shared Key
 
-In order to get a shared key, you'll need to register a client with the configurine. All that's required is a unique client ID and an email address. The client ID is used to  identify the client that is interacting with the system. To register a new client, you issue a POST request to the `/register` endpoint and include your desired client ID and email address like so:
+In order to get a shared key, you'll need to create a client with the configurine. All that's required is a unique client ID and an email address. The client ID is used to identify the client that is interacting with the system. To create a new client, you issue a POST request to the `/clients` endpoint and include your desired client ID and email address like so:
 
 ```
-POST http://localhost:8088/register
-Content-Type: application/x-www-form-urlencoded
+POST http://localhost:8088/clients
+Content-Type: application/json
 
-client_id=myclient&email=myclient@gmail.com
+{
+	"clientId": "myclient",
+	"email": "myclient@gmail.com"
+}
 ```
 
-Then you'll end up with a JSON response that contains a sharedKey, like so:
+Then you'll end up with a 201 Created response with the location of the resource like so:
 
 ```
-HTTP/1.1 200 OK
-Content-Type: application/json; charset=utf-8
-
-{"sharedKey":"16f46698-cad8-4134-9691-a8212a626849","email":"myclient@gmail.com","isConfirmed":false}
+HTTP/1.1 201 Created
+Location: http://localhost:8088/clients/myclient
 ```
 
-**Notes:**
+If you provide a client ID that already exists in the system, you'll end up getting a 409 Conflict response code, and will need to choose a different client ID.
 
-* If you provide a client ID that already exists in the system, you'll end up getting a 409 Conflict response code, and will need to choose a different client ID.
+While the this route doesn't require any authentication, the new client isn't flagged as "confirmed" and won't be authorized for any of the config routes until a client with admin rights updates the `isConfirmed` flag on the client that was created. 
+
+By default, when you fire up Configurine against an empty database, it'll create an admin client with the `clientId` of "admin" and a random `sharedKey`, which will be output to stdout. Save this sharedKey is a safe location. After the default admin client is created, Configurine will no longer output those credentials to stdout, and you are free to update that client as you see fit via the `PUT /clients/{clientId}` route.
+
+The other `clients` routes available for managing clients are:
+
+* `GET /clients/{clientId}`
+* `PUT /clients/{clientId}`
+* `DELETE /clients/{clientId}`
+
+And the full clients resource contains the following properties:
+
+* `clientId`: A unique string that identifies the client
+* `sharedKey`: The shared key used to generate a signature for the client when requesting a token
+* `email`: The client's email address
+* `isConfirmed`: A flag that denotes whether the client can access the `config` routes
+* `isAdmin`: A flag that denotes whether the client has write access to the `clients` routes
+
 
 ## Config API
 
@@ -260,7 +278,7 @@ As you can see, there are multiple values for the config entry named "loglevel".
 
 **Notes:**
 * This end point is also the only config route where the auth token is optional. When it is provided and valid, you are able to retrieve config entries that have the `isSensitive` property flagged as true. Otherwise, as an unauthenticated route, only non-senstive config entries are available. 
-* It's usually a not a good idea to have multiple config entries with identical associations and names. If you avoid this practice, and always provide the `names` and `associations` query string parameters, then you will always get a response with one item, which allows the consumer to not have to do any work in determining which entry to use.
+* It's usually a not a good idea to have multiple config entries with identical associations and names. Doing so could cause conflicts in the results you get back, and make it difficult to know which config entry to use.
 
 
 ### POST /config
