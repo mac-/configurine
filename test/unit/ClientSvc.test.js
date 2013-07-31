@@ -724,4 +724,76 @@ describe('ClientSvc Unit Tests', function() {
 		
 	});
 
+	describe('removeByName()', function() {
+		it('should remove the config document', function(done) {
+			var clientSvc = new ClientSvc(),
+				dbMock = sinon.mock(clientSvc._db);
+			dbMock.expects('open').once().callsArg(0);
+
+			var coll = getMockCollection(null, getMockClientDoc());
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
+
+			clientSvc.removeByName('myclient', function(err, result) {
+				dbMock.verify();
+				assert(!err);
+				assert.strictEqual(result._id, '519bc51c9b9c05f772000001');
+				done();
+			});
+		});
+
+		it('should return error when the remove fails', function(done) {
+			var clientSvc = new ClientSvc(),
+				dbMock = sinon.mock(clientSvc._db);
+			dbMock.expects('open').once().callsArg(0);
+
+			var coll = getMockCollection(new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
+
+			clientSvc.removeByName('myclient', function(err, result) {
+				dbMock.verify();
+				assert(err);
+				done();
+			});
+		});
+
+		it('should return error when getting the collection fails', function(done) {
+			var clientSvc = new ClientSvc(),
+				dbMock = sinon.mock(clientSvc._db);
+			dbMock.expects('open').once().callsArg(0);
+
+			dbMock.expects('collection').once().withExactArgs('clients').throws(new Error());
+
+			clientSvc.removeByName('myclient', function(err, result) {
+				dbMock.verify();
+				assert(err);
+				done();
+			});
+		});
+
+		it('should return error when getting opening the db fails', function(done) {
+			var clientSvc = new ClientSvc(),
+				dbMock = sinon.mock(clientSvc._db);
+			dbMock.expects('open').once().callsArgWith(0, new Error());
+
+			clientSvc.removeByName('myclient', function(err, result) {
+				dbMock.verify();
+				assert(err);
+				done();
+			});
+		});
+
+		it('should throw an exception when missing params', function(done) {
+			var clientSvc = new ClientSvc(),
+				dbMock = sinon.mock(clientSvc._db);
+			dbMock.expects('open').once().callsArg(0);
+
+			var coll = getMockCollection(new Error(), null);
+			dbMock.expects('collection').once().withExactArgs('clients').returns(coll);
+
+			assert.throws(clientSvc.removeByName);
+			done();
+		});
+		
+	});
+
 });
