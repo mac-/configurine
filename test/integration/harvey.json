@@ -38,6 +38,19 @@
 				"isConfirmed": true,
 				"isAdmin": false
 			}
+		},
+		{
+			"id": "postConfigBody",
+			"body": {
+				"name": "${configName}",
+				"value": "fnord",
+				"associations": {
+					"applications": [],
+					"environments": []
+				},
+				"isActive": true,
+				"isSensitive": false
+			}
 		}
 		
 	],
@@ -56,10 +69,17 @@
 			}
 		},
 		{
-			"id": "created",
+			"id": "createdClient",
 			"statusCode": 201,
 			"headers": {
 				"location": { "$regex": "clients/${testClientId}" }
+			}
+		},
+		{
+			"id": "createdConfig",
+			"statusCode": 201,
+			"headers": {
+				"location": { "$regex": "config/[0-9a-f]{24}" }
 			}
 		}
 	],
@@ -69,6 +89,19 @@
 			"actions": [{
 				"$set": {
 					"testClientId": {
+						"$random": {
+							"type": "string",
+							"length": 10
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "getRandomConfigName",
+			"actions": [{
+				"$set": {
+					"configName": {
 						"$random": {
 							"type": "string",
 							"length": 10
@@ -129,6 +162,31 @@
 			}]
 		},
 		{
+			"id": "getToken",
+			"request": {
+				"templates": ["base", "form"],
+				"method": "POST",
+				"resource": "/token",
+				"body": {
+					"grant_type": "client_credentials",
+					"client_id": "$eadminClientId}",
+					"timestamp": "${timestamp}",
+					"signature": "${signature}"
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200
+			},
+			"actions": [{
+				"$set": {
+					"adminAccessToken": {
+						"$extract": "body.access_token"
+					}
+				}
+			}]
+		},
+		{
 			"id": "removeClient",
 			"request": {
 				"templates": ["base", "json"],
@@ -150,8 +208,32 @@
 				"resource": "/clients"
 			},
 			"expectedResponse": {
-				"templates": ["json", "created"]
+				"templates": ["json", "createdClient"]
 			}
+		},
+		{
+			"id": "createConfig",
+			"request": {
+				"templates": ["base", "json", "authTokenHeader", "postConfigBody"],
+				"method": "POST",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json", "createdConfig"]
+			},
+			"actions": [{
+				"$set": {
+					"configId": {
+						"$replace": {
+							"value": {
+								"$extract": "headers.location"
+							},
+							"regex": "^.*/config/(.*)$",
+							"replacement": "$1"
+						}
+					}
+				}
+			}]
 		}
 	],
 	"suiteSetup": [
@@ -172,7 +254,7 @@
 				"resource": "/clients"
 			},
 			"expectedResponse": {
-				"templates": ["json", "created"]
+				"templates": ["json", "createdClient"]
 			},
 			"teardown": ["removeClient"]
 		},
@@ -349,6 +431,31 @@
 			"expectedResponse": {
 				"templates": ["json"],
 				"statusCode": 200
+			}
+		},
+		{
+			"id": "updateConfig_Success",
+			"setup": ["getAdminToken", "getRandomConfigName", "createConfig"],
+			"request": {
+				"templates": ["base", "json", "authTokenHeader"],
+				"method": "PUT",
+				"resource": "/config/${configId}",
+				"body": {
+					"id": "${configId}",
+					"name": "${configName}",
+					"value": "fnord2",
+					"associations": {
+						"applications": [],
+						"environments": []
+					},
+					"isActive": true,
+					"isSensitive": false,
+					"owner": "${adminClientId}"
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 204
 			}
 		}
 	]
