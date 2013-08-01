@@ -2,7 +2,7 @@
 	"requestTemplates": [
 		{
 			"id": "base",
-			"protocol": "${protocol}",
+			"protocol": "http",
 			"host": "${host}"
 		},
 		{
@@ -18,9 +18,15 @@
 			}
 		},
 		{
-			"id": "authTokenHeader",
+			"id": "adminAuthTokenHeader",
 			"headers": {
 				"authorization": "${adminAccessToken}"
+			}
+		},
+		{
+			"id": "authTokenHeader",
+			"headers": {
+				"authorization": "${accessToken}"
 			}
 		},
 		{
@@ -46,6 +52,35 @@
 				"value": "fnord",
 				"associations": {
 					"applications": [],
+					"environments": []
+				},
+				"isActive": true,
+				"isSensitive": false
+			}
+		},
+		{
+			"id": "postEnvironmentConfigBody",
+			"body": {
+				"name": "${configName}",
+				"value": "fnord",
+				"associations": {
+					"applications": [],
+					"environments": ["production"]
+				},
+				"isActive": true,
+				"isSensitive": false
+			}
+		},
+		{
+			"id": "postApplicationConfigBody",
+			"body": {
+				"name": "${configName}",
+				"value": "fnord",
+				"associations": {
+					"applications": [{
+						"name": "myapp",
+						"versions": ["1.0.0"]
+					}],
 					"environments": []
 				},
 				"isActive": true,
@@ -124,12 +159,28 @@
 			"id": "getAdminSignature",
 			"actions": [{
 				"$set": {
-					"signature": {
+					"adminSignature": {
 						"$crypto": {
 							"macType": "HMAC",
 							"algorithm": "sha1",
 							"data": "${adminClientId}:${timestamp}",
 							"key": "${adminKey}",
+							"encoding": "hex"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "getNonAdminSignature",
+			"actions": [{
+				"$set": {
+					"nonAdminSignature": {
+						"$crypto": {
+							"macType": "HMAC",
+							"algorithm": "sha1",
+							"data": "${nonAdminClientId}:${timestamp}",
+							"key": "${nonAdminClientKey}",
 							"encoding": "hex"
 						}
 					}
@@ -146,7 +197,7 @@
 					"grant_type": "client_credentials",
 					"client_id": "${adminClientId}",
 					"timestamp": "${timestamp}",
-					"signature": "${signature}"
+					"signature": "${adminSignature}"
 				}
 			},
 			"expectedResponse": {
@@ -162,16 +213,54 @@
 			}]
 		},
 		{
-			"id": "getToken",
+			"id": "createNonAdminClient",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "POST",
+				"resource": "/clients",
+				"body": {
+					"email": "fnord@test.com",
+					"clientId": "${nonAdminClientId}"
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 201,
+				"headers": {
+					"location": { "$regex": "clients/${testClientId}" }
+				}
+			}
+		},
+		{
+			"id": "getNonAdminClient",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/clients/${nonAdminClientId}",
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200
+			},
+			"actions": [{
+				"$set": {
+					"nonAdminClientKey": {
+						"$extract": "body.sharedKey"
+					}
+				}
+			}]
+		},
+		{
+			"id": "getNonAdminToken",
 			"request": {
 				"templates": ["base", "form"],
 				"method": "POST",
 				"resource": "/token",
 				"body": {
 					"grant_type": "client_credentials",
-					"client_id": "$eadminClientId}",
+					"client_id": "${nonAdminClientId}",
 					"timestamp": "${timestamp}",
-					"signature": "${signature}"
+					"signature": "${nonAdminSignature}"
 				}
 			},
 			"expectedResponse": {
@@ -180,7 +269,7 @@
 			},
 			"actions": [{
 				"$set": {
-					"adminAccessToken": {
+					"accessToken": {
 						"$extract": "body.access_token"
 					}
 				}
@@ -203,7 +292,7 @@
 		{
 			"id": "createClient",
 			"request": {
-				"templates": ["base", "json", "authTokenHeader", "postClientBody"],
+				"templates": ["base", "json", "adminAuthTokenHeader", "postClientBody"],
 				"method": "POST",
 				"resource": "/clients"
 			},
@@ -212,9 +301,9 @@
 			}
 		},
 		{
-			"id": "createConfig",
+			"id": "createEnvironmentConfig",
 			"request": {
-				"templates": ["base", "json", "authTokenHeader", "postConfigBody"],
+				"templates": ["base", "json", "adminAuthTokenHeader", "postEnvironmentConfigBody"],
 				"method": "POST",
 				"resource": "/config"
 			},
@@ -234,12 +323,51 @@
 					}
 				}
 			}]
+		},
+		{
+			"id": "createApplicationConfig",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader", "postApplicationConfigBody"],
+				"method": "POST",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json", "createdConfig"]
+			},
+			"actions": [{
+				"$set": {
+					"configId": {
+						"$replace": {
+							"value": {
+								"$extract": "headers.location"
+							},
+							"regex": "^.*/config/(.*)$",
+							"replacement": "$1"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "removeConfig",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${configId}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
 		}
 	],
 	"suiteSetup": [
 		"getTimestamp",
 		"getAdminSignature",
-		"getAdminToken"
+		"getAdminToken",
+		"createNonAdminClient",
+		"getNonAdminClient",
+		"getNonAdminSignature",
+		""
 	],
 	"suiteTeardown": [
 		
@@ -249,7 +377,7 @@
 			"id": "createClient_Success",
 			"setup": ["getRandomClientId"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader", "postClientBody"],
+				"templates": ["base", "json", "adminAuthTokenHeader", "postClientBody"],
 				"method": "POST",
 				"resource": "/clients"
 			},
@@ -262,7 +390,7 @@
 			"id": "createClient-invalidData_BadRequest",
 			"setup": ["getRandomClientId"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader", "postClientBody"],
+				"templates": ["base", "json", "adminAuthTokenHeader", "postClientBody"],
 				"method": "POST",
 				"resource": "/clients",
 				"body": {
@@ -281,7 +409,7 @@
 			"id": "createClient-missingData_BadRequest",
 			"setup": ["getRandomClientId"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader"],
+				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "POST",
 				"resource": "/clients",
 				"body": {
@@ -300,7 +428,7 @@
 			"id": "getClient_Success",
 			"setup": ["getRandomClientId", "createClient"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader"],
+				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "GET",
 				"resource": "/clients/${testClientId}"
 			},
@@ -314,7 +442,7 @@
 			"id": "getClient_NotFound",
 			"setup": ["getRandomClientId"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader"],
+				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "GET",
 				"resource": "/clients/${testClientId}"
 			},
@@ -327,7 +455,7 @@
 			"id": "updateClient_Success",
 			"setup": ["getRandomClientId", "createClient"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader", "putClientBody"],
+				"templates": ["base", "json", "adminAuthTokenHeader", "putClientBody"],
 				"method": "PUT",
 				"resource": "/clients/${testClientId}"
 			},
@@ -340,7 +468,7 @@
 			"id": "updateClient-invalidData_BadRequest",
 			"setup": ["getRandomClientId", "createClient"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader", "putClientBody"],
+				"templates": ["base", "json", "adminAuthTokenHeader", "putClientBody"],
 				"method": "PUT",
 				"resource": "/clients/${testClientId}",
 				"body": {
@@ -360,7 +488,7 @@
 			"id": "updateClient-missingData_BadRequest",
 			"setup": ["getRandomClientId", "createClient"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader"],
+				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "PUT",
 				"resource": "/clients/${testClientId}",
 				"body": {
@@ -380,7 +508,7 @@
 			"id": "updateClient_NotFound",
 			"setup": ["getRandomClientId"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader"],
+				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "PUT",
 				"resource": "/clients/${testClientId}",
 				"body": {
@@ -399,7 +527,7 @@
 			"id": "removeClient_Success",
 			"setup": ["getRandomClientId", "createClient"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader"],
+				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "DELETE",
 				"resource": "/clients/${testClientId}"
 			},
@@ -411,7 +539,7 @@
 			"id": "removeClient_NotFound",
 			"setup": ["getRandomClientId"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader"],
+				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "DELETE",
 				"resource": "/clients/${testClientId}"
 			},
@@ -424,7 +552,7 @@
 			"id": "getConfig_Success",
 			"setup": ["getAdminToken"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader"],
+				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "GET",
 				"resource": "/config"
 			},
@@ -434,10 +562,100 @@
 			}
 		},
 		{
-			"id": "updateConfig_Success",
-			"setup": ["getAdminToken", "getRandomConfigName", "createConfig"],
+			"id": "getEnvConfigById_Success",
+			"setup": ["getAdminToken", "getRandomConfigName", "createEnvironmentConfig"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config/${configId}"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": {
+					"id": "${configId}"
+				}
+			},
+			"teardown": ["removeConfig"]
+		},
+		{
+			"id": "getConfigById_NotFound",
+			"setup": ["getAdminToken"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config/0123456789abcdef01234567"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 404
+			},
+			"teardown": []
+		},
+		{
+			"id": "getConfigById_BadRequest",
+			"setup": ["getAdminToken"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config/fnord"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400
+			},
+			"teardown": []
+		},
+		{
+			"id": "getConfigById_Unauthorized",
+			"setup": [],
+			"request": {
+				"templates": ["base", "json"],
+				"method": "GET",
+				"resource": "/config/0123456789abcdef01234567"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 401
+			},
+			"teardown": []
+		},
+		{
+			"id": "getConfigById_Forbidden",
+			"setup": ["getAdminToken", "getRandomClientId", "createClient", "getToken", "getRandomConfigName", "createEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "authTokenHeader"],
+				"method": "GET",
+				"resource": "/config/${configId}"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 403
+			},
+			"teardown": ["removeConfig", "removeClient"]
+		},
+		{
+			"id": "getAppConfigById_Success",
+			"setup": ["getAdminToken", "getRandomConfigName", "createApplicationConfig"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config/${configId}"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": {
+					"id": "${configId}"
+				}
+			},
+			"teardown": ["removeConfig"]
+		},
+		{
+			"id": "updateConfigById_Success",
+			"setup": ["getAdminToken", "getRandomConfigName", "createEnvironmentConfig"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "PUT",
 				"resource": "/config/${configId}",
 				"body": {
@@ -456,7 +674,8 @@
 			"expectedResponse": {
 				"templates": ["json"],
 				"statusCode": 204
-			}
+			},
+			"teardown": ["removeConfig"]
 		}
 	]
 }
