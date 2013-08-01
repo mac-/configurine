@@ -24,6 +24,12 @@
 			}
 		},
 		{
+			"id": "nonAdminAuthTokenHeader",
+			"headers": {
+				"authorization": "${nonAdminAccessToken}"
+			}
+		},
+		{
 			"id": "authTokenHeader",
 			"headers": {
 				"authorization": "${accessToken}"
@@ -89,6 +95,12 @@
 		}
 		
 	],
+
+
+
+
+
+
 	"responseTemplates": [
 		{
 			"id": "json",
@@ -118,6 +130,12 @@
 			}
 		}
 	],
+
+
+
+
+
+
 	"setupAndTeardowns":[
 		{
 			"id": "getRandomClientId",
@@ -236,7 +254,7 @@
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "GET",
-				"resource": "/clients/${nonAdminClientId}",
+				"resource": "/clients/${nonAdminClientId}"
 			},
 			"expectedResponse": {
 				"templates": ["json"],
@@ -269,7 +287,7 @@
 			},
 			"actions": [{
 				"$set": {
-					"accessToken": {
+					"nonAdminAccessToken": {
 						"$extract": "body.access_token"
 					}
 				}
@@ -360,6 +378,12 @@
 			}
 		}
 	],
+
+
+
+
+
+
 	"suiteSetup": [
 		"getTimestamp",
 		"getAdminSignature",
@@ -367,11 +391,24 @@
 		"createNonAdminClient",
 		"getNonAdminClient",
 		"getNonAdminSignature",
-		""
+		"getNonAdminToken"
 	],
+
+
+
+
+
+
 	"suiteTeardown": [
 		
 	],
+
+
+
+
+
+
+
 	"tests": [
 		{
 			"id": "createClient_Success",
@@ -622,9 +659,9 @@
 		},
 		{
 			"id": "getConfigById_Forbidden",
-			"setup": ["getAdminToken", "getRandomClientId", "createClient", "getToken", "getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getAdminToken", "getRandomClientId", "createClient", "getRandomConfigName", "createEnvironmentConfig"],
 			"request": {
-				"templates": ["base", "json", "authTokenHeader"],
+				"templates": ["base", "json", "nonAdminAuthTokenHeader"],
 				"method": "GET",
 				"resource": "/config/${configId}"
 			},
