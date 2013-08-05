@@ -11,7 +11,7 @@ module.exports = {
 		argument: 'number',
 		defaultValue: 1,
 		type: Number,
-		description: 'The number of processes to use for this application.'
+		description: '(DOES NOT WORK YET) The number of processes to use for this application.'
 	},
 	databaseHost: {
 		character: 'o',

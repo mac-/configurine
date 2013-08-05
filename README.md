@@ -72,7 +72,7 @@ You can run configurine with the -h flag to see the various options:
 	    -h, --help                          output usage information
 	    -V, --version                       output the version number
 	    -l, --listen-port <port>            The port that the application will listen for incoming HTTP requests on. Defaults to: 8088
-	    -n, --number-processes <number>     The number of processes to use for this application. Defaults to: 1
+	    -n, --number-processes <number>     (DOES NOT WORK YET) The number of processes to use for this application. Defaults to: 1
 	    -o, --database-host <host>          The MongoDB host that this should connect to (hostname and port). This can also be a comma-separated list of hosts to support a replica set. Defaults to: "127.0.0.1:27017"
 	    -u, --database-user <user>          The user name to use when connecting to MongoDB.
 	    -p, --database-password <password>  The password to use when connecting to MongoDB.
@@ -182,6 +182,7 @@ And the full clients resource contains the following properties:
 * `isConfirmed`: A flag that denotes whether the client can access the `config` routes
 * `isAdmin`: A flag that denotes whether the client has write access to the `clients` routes
 
+**Note:** Admin clients also have write access to all config entries, so they are able to update and delete entries that arenot owned by them.
 
 ## Config API
 
@@ -382,6 +383,7 @@ HTTP/1.1 204 No Content
 
 * The authenticated client has to be the owner of the config entry being updated.
 * Be careful when updating the owner of a config entry. Once changed, the entry can no longer be updated by the previous owner.
+* When updating the owner, the new owner must be an existing client in the system.
 
 ### DELETE /config/{id}
 
