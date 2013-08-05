@@ -890,7 +890,7 @@
 				"method": "PUT",
 				"resource": "/config/${configId}",
 				"body": {
-					"owner": "fnord"
+					"owner": "${nonAdminClientId}"
 				}
 			},
 			"expectedResponse": {
