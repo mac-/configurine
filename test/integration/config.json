@@ -2,7 +2,8 @@
 	"protocol": "http",
 	"host": "localhost:8080",
 	"adminClientId": "admin",
-	"adminKey": "6c254d57-9900-4394-ab73-2128a7b68a34",
+	"adminKey": "10e6209d-5264-400e-9a87-e0ec16827119",
 	"nonAdminClientId": "fnord1234567890",
-	"confirmedNonAdminClientId": "confirmedFnord1234567890"
+	"confirmedNonAdminClientId": "confirmedFnord1234567890",
+	"nonExistentConfigId": "000000000000000000000000"
 }
