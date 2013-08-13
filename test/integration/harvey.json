@@ -54,7 +54,7 @@
 		{
 			"id": "postConfigBody",
 			"body": {
-				"name": "${configName}",
+				"name": "${configName1}",
 				"value": "fnord",
 				"associations": {
 					"applications": [],
@@ -68,7 +68,7 @@
 			"id": "putConfigBody",
 			"body": {
 				"id": "${configId}",
-				"name": "${configName}",
+				"name": "${configName1}",
 				"value": "fnord2",
 				"associations": {
 					"applications": [],
@@ -83,14 +83,14 @@
 			"id": "putInvalidConfigBody",
 			"body": {
 				"id": "${configId}",
-				"name": "${configName}"
+				"name": "${configName1}"
 			}
 		},
 		{
 			"id": "putNonExistentConfigBody",
 			"body": {
 				"id": "${nonExistentConfigId}",
-				"name": "${configName}",
+				"name": "${configName1}",
 				"value": "fnord2",
 				"associations": {
 					"applications": [],
@@ -108,29 +108,105 @@
 			}
 		},
 		{
-			"id": "postEnvironmentConfigBody",
+			"id": "postEnvironmentConfigBody1",
 			"body": {
-				"name": "${configName}",
-				"value": "fnord",
+				"name": "${configName1}",
+				"value": "fnord1",
 				"associations": {
 					"applications": [],
-					"environments": ["production"]
+					"environments": ["dev"]
 				},
 				"isActive": true,
 				"isSensitive": false
 			}
 		},
 		{
-			"id": "postApplicationConfigBody",
+			"id": "postEnvironmentConfigBody2",
 			"body": {
-				"name": "${configName}",
-				"value": "fnord",
+				"name": "${configName2}",
+				"value": "fnord2",
+				"associations": {
+					"applications": [],
+					"environments": ["staging"]
+				},
+				"isActive": true,
+				"isSensitive": true
+			}
+		},
+		{
+			"id": "postEnvironmentConfigBody3",
+			"body": {
+				"name": "${configName3}",
+				"value": "fnord3",
+				"associations": {
+					"applications": [],
+					"environments": ["production"]
+				},
+				"isActive": false,
+				"isSensitive": false
+			}
+		},
+		
+		{
+			"id": "postApplicationConfigBody1",
+			"body": {
+				"name": "${configName1}",
+				"value": "fnord1",
 				"associations": {
 					"applications": [{
 						"name": "myapp",
 						"versions": ["1.0.0"]
 					}],
 					"environments": []
+				},
+				"isActive": true,
+				"isSensitive": false
+			}
+		},
+		{
+			"id": "postApplicationConfigBody2",
+			"body": {
+				"name": "${configName2}",
+				"value": "fnord2",
+				"associations": {
+					"applications": [{
+						"name": "myapp",
+						"versions": ["2.0.0"]
+					}],
+					"environments": []
+				},
+				"isActive": true,
+				"isSensitive": true
+			}
+		},
+		{
+			"id": "postApplicationConfigBody3",
+			"body": {
+				"name": "${configName3}",
+				"value": "fnord3",
+				"associations": {
+					"applications": [{
+						"name": "myotherapp",
+						"versions": ["1.0.0"]
+					}],
+					"environments": []
+				},
+				"isActive": false,
+				"isSensitive": false
+			}
+		},
+
+		{
+			"id": "postEnvironmentAndApplicationConfigBody",
+			"body": {
+				"name": "${configName4}",
+				"value": "fnord4",
+				"associations": {
+					"applications": [{
+						"name": "myapp",
+						"versions": ["3.0.0"]
+					}],
+					"environments": ["production"]
 				},
 				"isActive": true,
 				"isSensitive": false
@@ -194,13 +270,31 @@
 			}]
 		},
 		{
-			"id": "getRandomConfigName",
+			"id": "getRandomConfigNames",
 			"actions": [{
 				"$set": {
-					"configName": {
+					"configName1": {
 						"$random": {
 							"type": "string",
 							"length": 10
+						}
+					},
+					"configName2": {
+						"$random": {
+							"type": "string",
+							"length": 11
+						}
+					},
+					"configName3": {
+						"$random": {
+							"type": "string",
+							"length": 12
+						}
+					},
+					"configName4": {
+						"$random": {
+							"type": "string",
+							"length": 13
 						}
 					}
 				}
@@ -370,9 +464,9 @@
 			}
 		},
 		{
-			"id": "createEnvironmentConfig",
+			"id": "createGenericEnvironmentConfig",
 			"request": {
-				"templates": ["base", "json", "adminAuthTokenHeader", "postEnvironmentConfigBody"],
+				"templates": ["base", "json", "adminAuthTokenHeader", "postEnvironmentConfigBody1"],
 				"method": "POST",
 				"resource": "/config"
 			},
@@ -394,9 +488,114 @@
 			}]
 		},
 		{
-			"id": "createApplicationConfig",
+			"id": "createEnvironmentConfig1",
 			"request": {
-				"templates": ["base", "json", "adminAuthTokenHeader", "postApplicationConfigBody"],
+				"templates": ["base", "json", "adminAuthTokenHeader", "postEnvironmentConfigBody1"],
+				"method": "POST",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json", "createdConfig"]
+			},
+			"actions": [{
+				"$set": {
+					"envConfigId1": {
+						"$replace": {
+							"value": {
+								"$extract": "headers.location"
+							},
+							"regex": "^.*/config/(.*)$",
+							"replacement": "$1"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "removeEnvironmentConfig1",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${envConfigId1}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
+		},
+		{
+			"id": "createEnvironmentConfig2",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader", "postEnvironmentConfigBody2"],
+				"method": "POST",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json", "createdConfig"]
+			},
+			"actions": [{
+				"$set": {
+					"envConfigId2": {
+						"$replace": {
+							"value": {
+								"$extract": "headers.location"
+							},
+							"regex": "^.*/config/(.*)$",
+							"replacement": "$1"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "removeEnvironmentConfig2",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${envConfigId2}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
+		},
+		{
+			"id": "createEnvironmentConfig3",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader", "postEnvironmentConfigBody3"],
+				"method": "POST",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json", "createdConfig"]
+			},
+			"actions": [{
+				"$set": {
+					"envConfigId3": {
+						"$replace": {
+							"value": {
+								"$extract": "headers.location"
+							},
+							"regex": "^.*/config/(.*)$",
+							"replacement": "$1"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "removeEnvironmentConfig3",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${envConfigId3}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
+		},
+		{
+			"id": "createGenericApplicationConfig",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader", "postApplicationConfigBody1"],
 				"method": "POST",
 				"resource": "/config"
 			},
@@ -416,6 +615,111 @@
 					}
 				}
 			}]
+		},
+		{
+			"id": "createApplicationConfig1",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader", "postApplicationConfigBody1"],
+				"method": "POST",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json", "createdConfig"]
+			},
+			"actions": [{
+				"$set": {
+					"appConfigId1": {
+						"$replace": {
+							"value": {
+								"$extract": "headers.location"
+							},
+							"regex": "^.*/config/(.*)$",
+							"replacement": "$1"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "removeApplicationConfig1",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${appConfigId1}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
+		},
+		{
+			"id": "createApplicationConfig2",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader", "postApplicationConfigBody2"],
+				"method": "POST",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json", "createdConfig"]
+			},
+			"actions": [{
+				"$set": {
+					"appConfigId2": {
+						"$replace": {
+							"value": {
+								"$extract": "headers.location"
+							},
+							"regex": "^.*/config/(.*)$",
+							"replacement": "$1"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "removeApplicationConfig2",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${appConfigId2}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
+		},
+		{
+			"id": "createApplicationConfig3",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader", "postApplicationConfigBody3"],
+				"method": "POST",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json", "createdConfig"]
+			},
+			"actions": [{
+				"$set": {
+					"appConfigId3": {
+						"$replace": {
+							"value": {
+								"$extract": "headers.location"
+							},
+							"regex": "^.*/config/(.*)$",
+							"replacement": "$1"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "removeApplicationConfig3",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${appConfigId3}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
 		},
 		{
 			"id": "removeConfig",
@@ -423,6 +727,41 @@
 				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "DELETE",
 				"resource": "/config/${configId}"
+			},
+			"expectedResponse": {
+				"statusCode": 204
+			}
+		},
+		{
+			"id": "createEnvironmentAndApplicationConfig",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader", "postEnvironmentAndApplicationConfigBody"],
+				"method": "POST",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json", "createdConfig"]
+			},
+			"actions": [{
+				"$set": {
+					"envAndAppConfigId": {
+						"$replace": {
+							"value": {
+								"$extract": "headers.location"
+							},
+							"regex": "^.*/config/(.*)$",
+							"replacement": "$1"
+						}
+					}
+				}
+			}]
+		},
+		{
+			"id": "removeEnvironmentAndApplicationConfig",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${envAndAppConfigId}"
 			},
 			"expectedResponse": {
 				"statusCode": 204
@@ -442,6 +781,50 @@
 					"id": "${configId}"
 				}
 			}
+		},
+		{
+			"id": "verifyConfigDeleted",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config/${configId}"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 404
+			}
+		},
+		{
+			"id": "countInitialConfig",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200
+			},
+			"actions": [{
+				"$set": {
+					"initialConfigCount": {
+						"$extract": "body.length"
+					}
+				}
+			}]
+		},
+		{
+			"id": "verifyTestDataDeleted",
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": { "$length": "${initialConfigCount}" }
+			}
 		}
 	],
 
@@ -457,7 +840,8 @@
 		"createNonAdminClient",
 		"getNonAdminClient",
 		"getNonAdminSignature",
-		"getNonAdminToken"
+		"getNonAdminToken",
+		"countInitialConfig"
 	],
 
 
@@ -466,7 +850,8 @@
 
 
 	"suiteTeardown": [
-		"removeNonAdminClient"
+		"removeNonAdminClient",
+		"verifyTestDataDeleted"
 	],
 
 
@@ -651,9 +1036,19 @@
 				"statusCode": 404
 			}
 		},
+
+
+
+
+
+
+
+
+
+
 		{
 			"id": "getEnvConfigById_Success",
-			"setup": ["getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "GET",
@@ -712,7 +1107,7 @@
 		},
 		{
 			"id": "getConfigById_NonOwner_Success",
-			"setup": ["getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "nonAdminAuthTokenHeader"],
 				"method": "GET",
@@ -729,7 +1124,7 @@
 		},
 		{
 			"id": "getAppConfigById_Success",
-			"setup": ["getAdminToken", "getRandomConfigName", "createApplicationConfig"],
+			"setup": ["getAdminToken", "getRandomConfigNames", "createGenericApplicationConfig"],
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "GET",
@@ -745,10 +1140,10 @@
 			"teardown": ["removeConfig"]
 		},
 		{
-			"id": "createEnvironmentConfig_Success",
-			"setup": ["getRandomConfigName"],
+			"id": "createGenericEnvironmentConfig_Success",
+			"setup": ["getRandomConfigNames"],
 			"request": {
-				"templates": ["base", "json", "adminAuthTokenHeader", "postEnvironmentConfigBody"],
+				"templates": ["base", "json", "adminAuthTokenHeader", "postEnvironmentConfigBody1"],
 				"method": "POST",
 				"resource": "/config"
 			},
@@ -771,7 +1166,7 @@
 			"teardown": ["verifyConfigCreated", "removeConfig"]
 		},
 		{
-			"id": "createEnvironmentConfig_BadRequest",
+			"id": "createGenericEnvironmentConfig_BadRequest",
 			"setup": [],
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader", "postInvalidConfigBody"],
@@ -785,10 +1180,10 @@
 			"teardown": []
 		},
 		{
-			"id": "createEnvironmentConfig_Unauthorized",
-			"setup": ["getRandomConfigName"],
+			"id": "createGenericEnvironmentConfig_Unauthorized",
+			"setup": ["getRandomConfigNames"],
 			"request": {
-				"templates": ["base", "json", "postEnvironmentConfigBody"],
+				"templates": ["base", "json", "postEnvironmentConfigBody1"],
 				"method": "POST",
 				"resource": "/config"
 			},
@@ -800,7 +1195,7 @@
 		},
 		{
 			"id": "updateConfigById_Success",
-			"setup": ["getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader", "putConfigBody"],
 				"method": "PUT",
@@ -814,7 +1209,7 @@
 		},
 		{
 			"id": "updateConfigById_BadRequest",
-			"setup": ["getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader", "putInvalidConfigBody"],
 				"method": "PUT",
@@ -828,7 +1223,7 @@
 		},
 		{
 			"id": "updateConfigByMismatchedId_BadRequest",
-			"setup": ["getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader", "putConfigBody"],
 				"method": "PUT",
@@ -842,7 +1237,7 @@
 		},
 		{
 			"id": "updateConfigById_Unauthorized",
-			"setup": ["getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "putConfigBody"],
 				"method": "PUT",
@@ -856,7 +1251,7 @@
 		},
 		{
 			"id": "updateConfigById_Forbidden",
-			"setup": ["getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "nonAdminAuthTokenHeader", "putConfigBody"],
 				"method": "PUT",
@@ -870,7 +1265,7 @@
 		},
 		{
 			"id": "updateConfigById_NotFound",
-			"setup": ["getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader", "putNonExistentConfigBody"],
 				"method": "PUT",
@@ -884,7 +1279,7 @@
 		},
 		{
 			"id": "updateOwnerOfConfigById_Success",
-			"setup": ["getRandomConfigName", "createEnvironmentConfig"],
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader", "putConfigBody"],
 				"method": "PUT",
@@ -900,19 +1295,90 @@
 			"teardown": ["removeConfig"]
 		},
 		{
-			"id": "removeConfigById_Success"
+			"id": "updateOwnerOfConfigById_BadRequest",
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader", "putConfigBody"],
+				"method": "PUT",
+				"resource": "/config/${configId}",
+				"body": {
+					"owner": "fnord"
+				}
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400
+			},
+			"teardown": ["removeConfig"]
 		},
 		{
-			"id": "removeConfigById_NotFound"
+			"id": "removeConfigById_Success",
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${configId}"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 204
+			},
+			"teardown": ["verifyConfigDeleted"]
 		},
 		{
-			"id": "removeConfigById_Unauthorized"
+			"id": "removeConfigById_NotFound",
+			"setup": [],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${nonExistentConfigId}"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 404
+			},
+			"teardown": []
 		},
 		{
-			"id": "removeConfigById_Forbidden"
+			"id": "removeConfigById_Unauthorized",
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
+			"request": {
+				"templates": ["base", "json"],
+				"method": "DELETE",
+				"resource": "/config/${configId}"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 401
+			},
+			"teardown": ["removeConfig"]
 		},
 		{
-			"id": "getConfig_Success",
+			"id": "removeConfigById_Forbidden",
+			"setup": ["getRandomConfigNames", "createGenericEnvironmentConfig"],
+			"request": {
+				"templates": ["base", "json", "nonAdminAuthTokenHeader"],
+				"method": "DELETE",
+				"resource": "/config/${configId}"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 403
+			},
+			"teardown": ["removeConfig"]
+		},
+
+
+
+
+
+
+
+
+
+
+		{
+			"id": "getAllConfig_Success",
 			"setup": [],
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader"],
@@ -925,40 +1391,180 @@
 			}
 		},
 		{
-			"id": "getConfigByName_Success"
+			"id": "getConfigByName_Success",
+			"setup": ["getRandomConfigNames", "createEnvironmentConfig1"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": { "$length": 1 }
+			},
+			"teardown": ["removeEnvironmentConfig1"]
 		},
 		{
-			"id": "getConfigByMultipleNames_Success"
+			"id": "getConfigByMultipleNames_Success",
+			"setup": ["getRandomConfigNames", "createEnvironmentConfig1", "createEnvironmentConfig2"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}&names=${configName2}"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": { "$length": 2 }
+			},
+			"teardown": ["removeEnvironmentConfig1", "removeEnvironmentConfig2"]
 		},
 		{
-			"id": "getConfigByAppAssociation_Success"
+			"id": "getConfigByNameAndEnvAssociation_Success",
+			"setup": ["getRandomConfigNames", "createEnvironmentConfig1", "createEnvironmentConfig2"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}&names=${configName2}&associations=environment|dev"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": { "$length": 1 }
+			},
+			"teardown": ["removeEnvironmentConfig1", "removeEnvironmentConfig2"]
 		},
 		{
-			"id": "getConfigByEnvAssociation_Success"
+			"id": "getConfigByNameAndAppAssociation_Success",
+			"setup": ["getRandomConfigNames", "createApplicationConfig1", "createApplicationConfig2"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}&names=${configName2}&associations=application|myapp|1.0.0"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": { "$length": 1 }
+			},
+			"teardown": ["removeApplicationConfig1", "removeApplicationConfig2"]
 		},
 		{
-			"id": "getConfigByAssociations_Success"
+			"id": "getConfigByNameAndIsActiveTrue_Success",
+			"setup": ["getRandomConfigNames", "createApplicationConfig1", "createApplicationConfig3"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}&names=${configName3}&isActive=true"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": { "$length": 1 }
+			},
+			"teardown": ["removeApplicationConfig1", "removeApplicationConfig3"]
 		},
 		{
-			"id": "getConfigByIsActiveTrue_Success"
+			"id": "getConfigByNameAndIsActiveFalse_Success",
+			"setup": ["getRandomConfigNames", "createApplicationConfig1", "createApplicationConfig3"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}&names=${configName3}&isActive=false"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": { "$length": 1 }
+			},
+			"teardown": ["removeApplicationConfig1", "removeApplicationConfig3"]
 		},
 		{
-			"id": "getConfigByIsActiveFalse_Success"
+			"id": "getNonsensitiveConfigWithoutToken_Success",
+			"setup": ["getRandomConfigNames", "createApplicationConfig1", "createApplicationConfig2"],
+			"request": {
+				"templates": ["base", "json"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}&names=${configName2}"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": { "$length": 1 }
+			},
+			"teardown": ["removeApplicationConfig1", "removeApplicationConfig2"]
 		},
 		{
-			"id": "getConfigByNameAndAssociation_Success"
+			"id": "getConfigByNonExistentName_Success",
+			"setup": ["getRandomConfigNames", "createApplicationConfig1", "createApplicationConfig3"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=somenonexixtentname1234567890"
+			},
+			"expectedResponse": {
+				"templates": ["json"],
+				"statusCode": 200,
+				"body": { "$length": 0 }
+			},
+			"teardown": ["removeApplicationConfig1", "removeApplicationConfig3"]
 		},
 		{
-			"id": "getConfigByNonExistentName_Success"
+			"id": "getConfigMalformedQueryStringParams_BadRequest",
+			"setup": ["getRandomConfigNames", "createApplicationConfig1", "createApplicationConfig3"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}&associations=fnord"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400
+			},
+			"teardown": ["removeApplicationConfig1", "removeApplicationConfig3"]
 		},
 		{
-			"id": "getConfigMalformedQueryStringParams_BadRequest"
+			"id": "getConfigEmptyQueryStringParams_BadRequest",
+			"setup": ["getRandomConfigNames", "createApplicationConfig1", "createApplicationConfig3"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names="
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400
+			},
+			"teardown": ["removeApplicationConfig1", "removeApplicationConfig3"]
 		},
 		{
-			"id": "getConfigDuplicateQueryStringParams_BadRequest"
+			"id": "getConfigDuplicateQueryStringParams_BadRequest",
+			"setup": ["getRandomConfigNames", "createApplicationConfig1", "createApplicationConfig3"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}&associations=application|myapp|1.0.0&assocations=application|myapp|1.0.0"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400
+			},
+			"teardown": ["removeApplicationConfig1", "removeApplicationConfig3"]
 		},
 		{
-			"id": "getConfigUnrecognizedAssociation_BadRequest"
+			"id": "getConfigUnrecognizedAssociation_BadRequest",
+			"setup": ["getRandomConfigNames", "createApplicationConfig1", "createApplicationConfig3"],
+			"request": {
+				"templates": ["base", "json", "adminAuthTokenHeader"],
+				"method": "GET",
+				"resource": "/config?names=${configName1}&unrecognized=fnord"
+			},
+			"expectedResponse": {
+				"templates": ["json", "errorBody"],
+				"statusCode": 400
+			},
+			"teardown": ["removeApplicationConfig1", "removeApplicationConfig3"]
 		}
 	]
 }
