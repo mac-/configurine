@@ -11,7 +11,7 @@
 		"underscore": "1.x.x",
 		"async": "0.x.x",
 		"hapi": "1.x.x",
-		"joi": "0.x.x",
+		"joi": "1.x.x",
 		"lout": "0.x.x",
 		"furball": "0.x.x",
 		"tracer": "0.x.x",
