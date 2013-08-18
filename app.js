@@ -121,7 +121,14 @@ else {*/
 		ClientController = require('./lib/ClientController'),
 		clientController = new ClientController(options),
 		listenPort = config.listenPort || 8088,
-		server = Hapi.createServer(listenPort),
+		server = Hapi.createServer('0.0.0.0', listenPort, {
+			cache: (config.redisHost) ? {
+				engine: 'redis',
+				host: config.redisHost.split(':')[0],
+				port: parseInt(config.redisHost.split(':')[1],10),
+				password: config.redisPassword
+			} : 'memory'
+		}),
 		authHelper = new AuthHelper(options),
 		startTimesFromRequestId = {},
 		isStarted = false,

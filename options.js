@@ -46,5 +46,16 @@ module.exports = {
 		argument: 'host',
 		defaultValue: '127.0.0.1:8125',
 		description: 'The statsd host (hostname and port) where metrics can be sent.'
+	},
+	redisHost: {
+		character: 'r',
+		argument: 'host',
+		description: 'The redis host (hostname and port) that can be used for caching. If not specified, an in-memory cache will be used'
+	},
+	redisPassword: {
+		character: 'P',
+		argument: 'string',
+		defaultValue: undefined,
+		description: 'The redis authentication password when required.'
 	}
 };
