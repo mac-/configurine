@@ -57,5 +57,11 @@ module.exports = {
 		argument: 'string',
 		defaultValue: undefined,
 		description: 'The redis authentication password when required.'
+	},
+	secondsToCache : {
+		character : 'c',
+		argument : 'number',
+		defaultValue : 300000,
+		description : 'The length of time in which configurine will cache GET requests'
 	}
 };
