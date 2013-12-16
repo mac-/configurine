@@ -19,7 +19,8 @@
 		"statsd-client": "0.x.x",
 		"node-uuid": "1.x.x",
 		"clone": "0.x.x",
-		"redis": "0.x.x"
+		"redis": "0.x.x",
+		"ratify": "0.x.x"
 	},
 	"devDependencies": {
 		"mocha": "1.x.x",
@@ -28,7 +29,8 @@
 		"request": "2.x.x",
 		"blanket": "1.0.x",
 		"travis-cov": "0.2.x",
-		"sinon": "1.x.x"
+		"sinon": "1.x.x",
+		"harvey": "0.2.17"
 	},
 	"keywords": [
 		"config"

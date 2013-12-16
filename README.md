@@ -181,8 +181,10 @@ And the full clients resource contains the following properties:
 * `email`: The client's email address
 * `isConfirmed`: A flag that denotes whether the client can access the `config` routes
 * `isAdmin`: A flag that denotes whether the client has write access to the `clients` routes
+* `created`: The date and time the client was created in the system
+* `modified`: The date and time the client was last modified
 
-**Note:** Admin clients also have write access to all config entries, so they are able to update and delete entries that arenot owned by them.
+**Note:** Admin clients also have write access to all config entries, so they are able to update and delete entries that are not owned by them.
 
 ## Config API
 
@@ -195,6 +197,8 @@ Config entries will mainly be accessed by name. A config document consists of th
 * `isActive`: A flag that marks whether or not this config entry is available to consumers
 * `isSensitive`: A flag that marks whether or not this config entry requires authentication in order to be available to conumers
 * `owner`: The ID of the client that created the entry
+* `created`: The date and time the config entry was created in the system
+* `modified`: The date and time the config entry was last modified
 
 ### GET /config
 

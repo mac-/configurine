@@ -122,6 +122,9 @@ else {*/
 		clientController = new ClientController(options),
 		listenPort = config.listenPort || 8088,
 		server = Hapi.createServer('0.0.0.0', listenPort, {
+			/*debug: {
+				request: ['error', 'uncaught']
+			},*/
 			cache: (config.redisHost) ? {
 				engine: 'redis',
 				host: config.redisHost.split(':')[0],
@@ -135,6 +138,9 @@ else {*/
 		normalizePath = function(path) {
 			path = (path.indexOf('/') === 0) ? path.substr(1) : path;
 			return path.replace(/\//g, '-');
+		},
+		plugins = {
+			'ratify': {}
 		};
 
 	
@@ -150,6 +156,12 @@ else {*/
 	server.route(authController.routes);
 	server.route(clientController.routes);
 
+	server.pack.require(plugins, function(err) {
+		if (err) {
+			logger.error('There was a problem loading plugins', err);
+		}
+		logger.info('Plugins loaded successfully!');
+	});
 
 	server.ext('onRequest', function (request, next) {
 		startTimesFromRequestId[request.id] = new Date();

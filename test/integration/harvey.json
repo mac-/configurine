@@ -151,7 +151,9 @@
 			"id": "postApplicationConfigBody1",
 			"body": {
 				"name": "${configName1}",
-				"value": "fnord1",
+				"value": {
+					"test.dots": "fnord"
+				},
 				"associations": {
 					"applications": [{
 						"name": "myapp",
@@ -224,7 +226,7 @@
 		{
 			"id": "json",
 			"headers": {
-				"content-type": "application/json"
+				"content-type": "application/json; charset=utf-8"
 			}
 		},
 		{
@@ -263,7 +265,8 @@
 					"testClientId": {
 						"$random": {
 							"type": "string",
-							"length": 10
+							"length": 10,
+							"characters": "abcdefghijklmnopqrstuvwxyz"
 						}
 					}
 				}
@@ -379,10 +382,10 @@
 				}
 			},
 			"expectedResponse": {
-				"templates": ["json"],
+				"templates": [],
 				"statusCode": 201,
 				"headers": {
-					"location": { "$regex": "clients/${testClientId}" }
+					"location": { "$regex": "clients/${nonAdminClientId}" }
 				}
 			}
 		},
@@ -460,7 +463,7 @@
 				"resource": "/clients"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdClient"]
+				"templates": ["createdClient"]
 			}
 		},
 		{
@@ -471,7 +474,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -495,7 +498,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -530,7 +533,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -565,7 +568,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -600,7 +603,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -624,7 +627,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -659,7 +662,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -694,7 +697,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -740,7 +743,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -870,7 +873,7 @@
 				"resource": "/clients"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdClient"]
+				"templates": ["createdClient"]
 			},
 			"teardown": ["removeClient"]
 		},
@@ -889,7 +892,7 @@
 				"templates": ["json", "errorBody"],
 				"statusCode": 400,
 				"body": {
-					"message": { "$regex": "invalid.*is not allowed" }
+					"message": { "$regex": "payload parameters validation error" }
 				}
 			}
 		},
@@ -908,7 +911,7 @@
 				"templates": ["json", "errorBody"],
 				"statusCode": 400,
 				"body": {
-					"message": { "$regex": "the value of email is not allowed to be undefined" }
+					"message": { "$regex": "payload parameters validation error" }
 				}
 			}
 		},
@@ -967,7 +970,7 @@
 				"templates": ["json", "errorBody"],
 				"statusCode": 400,
 				"body": {
-					"message": { "$regex": "invalid.*is not allowed" }
+					"message": { "$regex": "payload parameters validation error" }
 				}
 			},
 			"teardown": ["removeClient"]
@@ -987,7 +990,7 @@
 				"templates": ["json", "errorBody"],
 				"statusCode": 400,
 				"body": {
-					"message": { "$regex": "the value of clientId is not allowed to be undefined" }
+					"message": { "$regex": "payload parameters validation error" }
 				}
 			},
 			"teardown": ["removeClient"]
@@ -1148,7 +1151,7 @@
 				"resource": "/config"
 			},
 			"expectedResponse": {
-				"templates": ["json", "createdConfig"]
+				"templates": ["createdConfig"]
 			},
 			"actions": [{
 				"$set": {
@@ -1202,7 +1205,7 @@
 				"resource": "/config/${configId}"
 			},
 			"expectedResponse": {
-				"templates": ["json"],
+				"templates": [],
 				"statusCode": 204
 			},
 			"teardown": ["removeConfig"]
@@ -1289,7 +1292,7 @@
 				}
 			},
 			"expectedResponse": {
-				"templates": ["json"],
+				"templates": [],
 				"statusCode": 204
 			},
 			"teardown": ["removeConfig"]
@@ -1320,7 +1323,7 @@
 				"resource": "/config/${configId}"
 			},
 			"expectedResponse": {
-				"templates": ["json"],
+				"templates": [],
 				"statusCode": 204
 			},
 			"teardown": ["verifyConfigDeleted"]
@@ -1544,7 +1547,7 @@
 			"request": {
 				"templates": ["base", "json", "adminAuthTokenHeader"],
 				"method": "GET",
-				"resource": "/config?names=${configName1}&associations=application|myapp|1.0.0&assocations=application|myapp|1.0.0"
+				"resource": "/config?names=${configName1}&associations=application|myapp|1.0.0&associations=application|myapp|1.0.0"
 			},
 			"expectedResponse": {
 				"templates": ["json", "errorBody"],
