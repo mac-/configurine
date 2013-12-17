@@ -135,18 +135,14 @@ else {*/
 		authHelper = new AuthHelper(options),
 		startTimesFromRequestId = {},
 		isStarted = false,
-		normalizePath = function(path) {
-			path = (path.indexOf('/') === 0) ? path.substr(1) : path;
-			return path.replace(/\//g, '-');
-		},
 		plugins = {
-			'ratify': {}
+			'ratify': {},
+			'hapi-statsd': {
+				statsdHost: config.statsdHost,
+				prefix: 'configurine'
+			}
 		};
 
-	
-	
-	// this doesn't work yet
-	//pack.require(['furball', 'lout']);
 
 	// register auth mechanism (before registering routes)
 	server.auth('oauth2', { implementation: authHelper });
@@ -161,19 +157,6 @@ else {*/
 			logger.error('There was a problem loading plugins', err);
 		}
 		logger.info('Plugins loaded successfully!');
-	});
-
-	server.ext('onRequest', function (request, next) {
-		startTimesFromRequestId[request.id] = new Date();
-		next();
-	});
-
-	server.ext('onPreResponse', function (request, next) {
-		var statusCode = request.response()._code || request.response().response.code || 'unknown';
-		statsdClient.increment(request.method + '_' + normalizePath(request.path) + '.statusCode.' + statusCode);
-		statsdClient.increment(request.method + '_' + normalizePath(request.path));
-		statsdClient.timing(request.method + '_' + normalizePath(request.path), startTimesFromRequestId[request.id]);
-		next();
 	});
 
 	errorHandler = function(evt, err) {

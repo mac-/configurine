@@ -12,15 +12,14 @@
 		"async": "0.x.x",
 		"hapi": "1.x.x",
 		"joi": "1.x.x",
-		"lout": "0.x.x",
-		"furball": "0.x.x",
 		"tracer": "0.x.x",
 		"eidetic": "0.x.x",
 		"statsd-client": "0.x.x",
 		"node-uuid": "1.x.x",
 		"clone": "0.x.x",
 		"redis": "0.x.x",
-		"ratify": "0.x.x"
+		"ratify": "0.x.x",
+		"hapi-statsd": "0.x.x"
 	},
 	"devDependencies": {
 		"mocha": "1.x.x",

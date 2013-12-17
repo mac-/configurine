@@ -2,7 +2,7 @@ module.exports = {
 	listenPort: {
 		character: 'l',
 		argument: 'port',
-		defaultValue: 8088,
+		defaultValue: 8080,
 		type: Number,
 		description: 'The port that the application will listen for incoming HTTP requests on.'
 	},
