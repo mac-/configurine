@@ -5,5 +5,5 @@ lib-test
 coverage
 .DS*
 *.txt
-opter.json
+opter.json*
 test/coverage*

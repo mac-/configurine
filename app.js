@@ -95,9 +95,7 @@ var version = require('./package.json').version,
 }
 else {*/
 	var Hapi = require('hapi'),
-		pack = new Hapi.Pack(),
 		_ = require('underscore'),
-		//config = process.env,
 		dbHosts = (config.databaseHost) ? config.databaseHost.split(',') : undefined,
 		options = {
 			db: {
@@ -120,11 +118,23 @@ else {*/
 		authController = new AuthenticationController(options),
 		ClientController = require('./lib/ClientController'),
 		clientController = new ClientController(options),
-		listenPort = config.listenPort || 8088,
-		server = Hapi.createServer('0.0.0.0', listenPort, {
-			/*debug: {
+		server = Hapi.createServer('0.0.0.0', config.listenPort, {
+			debug: {
 				request: ['error', 'uncaught']
-			},*/
+			},
+			router: {
+				isCaseSensitive: false
+			},
+			cors: {
+				additionalHeaders: [
+					'X-Requested-With',
+					'Authorization'
+				],
+				additionalExposedHeaders: [
+					'Location',
+					'Content-Range'
+				]
+			},
 			cache: (config.redisHost) ? {
 				engine: 'redis',
 				host: config.redisHost.split(':')[0],
