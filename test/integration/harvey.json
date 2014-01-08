@@ -76,7 +76,9 @@
 				},
 				"isActive": true,
 				"isSensitive": false,
-				"owner": "${adminClientId}"
+				"owner": "${adminClientId}",
+				"created": "2014-01-08T20:03:05.334Z",
+				"modified": "2014-01-08T20:03:05.334Z"
 			}
 		},
 		{
