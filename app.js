@@ -180,11 +180,15 @@ else {*/
 		}
 		if (isStarted) {
 			server.stop(function() {
-				process.exit(1);
+				process.nextTick(function() {
+					process.exit(1);
+				});
 			});
 		}
 		else {
-			process.exit(1);
+			process.nextTick(function() {
+				process.exit(1);
+			});
 		}
 	};
 
